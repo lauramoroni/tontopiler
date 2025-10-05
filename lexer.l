@@ -33,24 +33,33 @@ novosTipos            {letra}+DataType
 %% 
 // regras de tradução
 {brancos}	;
-{reservadas} return RESERVADAS;
-{estereotipoClasse} return ESTEREOTIPO_CLASSES;
-{estereotipoRelacao} return ESTEREOTIPO_RELACOES;
-{id}         return ID;
-{num}        return NUM;
-"<"          return SIMBOLOS;
-">"          return SIMBOLOS;
-"{"          return SIMBOLOS;
-"}"          return SIMBOLOS;
-"("          return SIMBOLOS;
-")"          return SIMBOLOS;
-"["          return SIMBOLOS;
-"]"          return SIMBOLOS;
-"..."        return SIMBOLOS;
-"<>--"       return SIMBOLOS;
-"--<>"       return SIMBOLOS;
-"*"          return SIMBOLOS;
-"@"          return SIMBOLOS;
-":"          return SIMBOLOS;
+{estereotipoClasse}   return ESTEREOTIPO_CLASSES;
+{estereotipoRelacao}  return ESTEREOTIPO_RELACOES;
+{reservadas}          return RESERVADAS;
+{tipoNativo}          return TIPOS_NATIVOS;
+{metaAtributos}       return META_ATRIBUTOS;
 
+{novosTipos}          return NOVOS_TIPOS;
+{convencaoClasses}    return CONVENCAO_CLASSES;
+{convencaoRelacoes}   return CONVENCAO_RELACOES;
+{convencaoInstancias} return CONVENCAO_INSTANCIAS;
+
+{id}                  return ID;
+{num}                 return NUM;
+
+"<"                   return SIMBOLOS;
+">"                   return SIMBOLOS;
+"{"                   return SIMBOLOS;
+"}"                   return SIMBOLOS;
+"("                   return SIMBOLOS;
+")"                   return SIMBOLOS;
+"["                   return SIMBOLOS;
+"]"                   return SIMBOLOS;
+"..."                 return SIMBOLOS;
+"<>--"                return SIMBOLOS;
+"--<>"                return SIMBOLOS;
+"*"                   return SIMBOLOS;
+"@"                   return SIMBOLOS;
+":"                   return SIMBOLOS;
+";"                   return SIMBOLOS;
 %%
