@@ -44,6 +44,7 @@ novosTipos             {letra}+DataType
 %% 
 \n                    ;
 {brancos}	          ;
+
 {estereotipoClasse}   cout << "ESTEREOTIPO_CLASSE: " << yytext << endl;
 {estereotipoRelacao}  cout << "ESTEREOTIPO_RELACAO: " << yytext << endl;
 {reservadas}          cout << "RESERVADA: " << yytext << endl;
@@ -51,7 +52,7 @@ novosTipos             {letra}+DataType
 {metaAtributos}       cout << "META_ATRIBUTO: " << yytext << endl;
 
 {novosTipos}          cout << "NOVO_TIPO: " << yytext << endl;
-{convencaoClasses}    cout << "CONVENCAO_CLASSE: " << yytext << endl;
+{convencaoIdentificador} cout << "CONVENCAO_IDENTIFICADOR: " << yytext << endl;
 {convencaoRelacoes}   cout << "CONVENCAO_RELACAO: " << yytext << endl;
 {convencaoInstancias} cout << "CONVENCAO_INSTANCIA: " << yytext << endl;
 
