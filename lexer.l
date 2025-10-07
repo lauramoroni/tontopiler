@@ -21,25 +21,24 @@ enum {
 %option noyywrap
 
 
-delim	              [ \t\n]
-brancos               {delim}+
-letra	              [A-Za-z]
-maiuscula             [A-Z]
-minuscula             [a-z]
-digito	              [0-9]
-id	                  {letra}({letra}|{digito})*
-num	                  {digito}+(\.{digito}+)?(E[+-]?{digito}+)?
+delim	               [ \t\n]
+brancos                {delim}+
+letra	               [A-Za-z]
+maiuscula              [A-Z]
+minuscula              [a-z]
+digito	               [0-9]
+num	                   {digito}+(\.{digito}+)?(E[+-]?{digito}+)?
 
-estereotipoClasse	  event|situation|process|category|mixin|phaseMixin|roleMixin|historicalRoleMixin|kind|collective|quantity|quality|mode|intrisicMode|extrinsicMode|subkind|phase|role|historicalRole
-estereotipoRelacao    material|derivation|comparative|mediation|characterization|externalDependence|componentOf|memberOf|subCollectionOf|subQualityOf|instantiation|termination|participational|participation|historicalDependence|creation|manifestation|bringsAbout|triggers|composition|aggregation|inherence|value|formal|constitution
-reservadas            genset|disjoint|complete|general|specifics|where|package
-tipoNativo            number|string|boolean|date|time|datetime
-metaAtributos         ordered|const|derived|subsets|redefines
+estereotipoClasse	   event|situation|process|category|mixin|phaseMixin|roleMixin|historicalRoleMixin|kind|collective|quantity|quality|mode|intrisicMode|extrinsicMode|subkind|phase|role|historicalRole
+estereotipoRelacao     material|derivation|comparative|mediation|characterization|externalDependence|componentOf|memberOf|subCollectionOf|subQualityOf|instantiation|termination|participational|participation|historicalDependence|creation|manifestation|bringsAbout|triggers|composition|aggregation|inherence|value|formal|constitution
+reservadas             genset|disjoint|complete|general|specifics|where|package
+tipoNativo             number|string|boolean|date|time|datetime
+metaAtributos          ordered|const|derived|subsets|redefines
 
-convencaoClasses      {maiuscula}{letra}*(_{letra}+)*
-convencaoRelacoes     {minuscula}{letra}*(_{letra}+)*
-convencaoInstancias   {letra}+_*{letra}*{digito}+
-novosTipos            {letra}+DataType
+convencaoIdentificador {maiuscula}{letra}*(_{letra}+)*
+convencaoRelacoes      {minuscula}{letra}*(_{letra}+)*
+convencaoInstancias    {letra}+_*{letra}*{digito}+
+novosTipos             {letra}+DataType
 
 
 %% 
