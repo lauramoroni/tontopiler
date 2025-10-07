@@ -21,7 +21,7 @@ enum {
 %option noyywrap
 
 
-delim	               [ \t\n]
+delim	               [ \s\t\n]
 brancos                {delim}+
 letra	               [A-Za-z]
 maiuscula              [A-Z]
@@ -42,7 +42,6 @@ novosTipos             {letra}+DataType
 
 
 %% 
-\n                    ;
 {brancos}	          ;
 
 {estereotipoClasse}   cout << "ESTEREOTIPO_CLASSE: " << yytext << endl;
