@@ -74,8 +74,10 @@ novosTipos            {letra}+DataType
 "@"                   cout << "SIMBOLO: " << yytext << endl;
 ":"                   cout << "SIMBOLO: " << yytext << endl;
 ";"                   cout << "SIMBOLO: " << yytext << endl;
-%%
+"<o>--"                cout << "SIMBOLO: " << yytext << endl;
+"--<o>"                cout << "SIMBOLO: " << yytext << endl;
 
+%%
 
 int main()
 {
