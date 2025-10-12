@@ -1,5 +1,6 @@
 %{
 #include <iostream>
+#include <fstream>
 using namespace std;
 
 enum {
@@ -15,10 +16,14 @@ enum {
     NOVOS_TIPOS,
     META_ATRIBUTOS
 };
+
+char **fileList;
+unsigned nFiles;
+unsigned currentFile = 0;
+bool openFile = false;
+
+ifstream fin;
 %}
-
-%option noyywrap
-
 
 delim	                  [ \s\t\n]
 brancos                   {delim}+
@@ -64,6 +69,7 @@ novosTipos                {letra}+DataType
 ")"                       cout << "SIMBOLO: " << yytext << endl;
 "["                       cout << "SIMBOLO: " << yytext << endl;
 "]"                       cout << "SIMBOLO: " << yytext << endl;
+"--"                      cout << "SIMBOLO: " << yytext << endl;
 "..."                     cout << "SIMBOLO: " << yytext << endl;
 "<>--"                    cout << "SIMBOLO: " << yytext << endl;
 "--<>"                    cout << "SIMBOLO: " << yytext << endl;
@@ -76,8 +82,45 @@ novosTipos                {letra}+DataType
 
 %%
 
-int main()
-{
+int main(int argc, char ** argv)
+{	
+    nFiles = argc - 1;  	     // quantidade de arquivos
+    fileList = argv + 1;         // nomes dos arquivos
+	
 	yyFlexLexer lexer;
-	lexer.yylex();
+    lexer.switch_streams(&fin);
+	lexer.yywrap();
+
+	if (openFile)
+	{
+        cout << "-=-=-=- Analisador Léxico -=-=-=-\n\n";
+		lexer.yylex();
+	}
+}
+
+
+int yyFlexLexer::yywrap()
+{
+	// fecha o arquivo processado
+	if (openFile)
+	{    
+		openFile = false;
+		fin.close();
+	}
+
+	// enquanto existir arquivos para processar, tentar abrir o próximo
+	while (!openFile && (fileList[currentFile] != nullptr)) 
+    {
+		fin.open(fileList[currentFile++]);
+		if (fin.is_open()) 
+        {
+			openFile = true;
+		}
+		else
+		{
+			cout << fileList[currentFile-1] << " = não foi possível abrir\n";
+		}		
+	}
+
+	return (openFile ? 0 : 1);	// 0 significa que tem mais entrada para processar
 }
