@@ -8,10 +8,11 @@ bool SymbolTable::insert(const char* lexeme, int token) {
    string key(lexeme);
 
    if (symbolMap.find(key) != symbolMap.end()) {
+      symbolMap[key].occurrences++;
       return false;
    }
 
-   symbolMap[key] = {key, token};
+   symbolMap[key] = {key, token, 1};
 
    return true;
 }
@@ -41,9 +42,8 @@ void SymbolTable::toCSV(const char* filename) {
    fprintf(file, "Lexeme,Token\n");
 
    for (const auto& pair : symbolMap) {
-      // get token string
       const char* token_string = tokenToString(pair.second.token);
-      fprintf(file, "%s,%s\n", pair.second.lexeme.c_str(), token_string);
+      fprintf(file, "%s,%s,%d\n", pair.second.lexeme.c_str(), token_string, pair.second.occurrences);
    }
 
    fclose(file);

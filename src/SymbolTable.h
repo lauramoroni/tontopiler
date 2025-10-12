@@ -12,6 +12,7 @@ struct Symbol
 {
    string lexeme;
    int token;
+   int occurrences;
 };
 
 
