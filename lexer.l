@@ -1,26 +1,18 @@
 %{
 #include <iostream>
 #include <fstream>
+#include "SymbolTable.h"
+#include "token.h"
+
 using namespace std;
 
-enum {
-    NUM,
-    ESTEREOTIPO_CLASSES,
-    ESTEREOTIPO_RELACOES,
-    RESERVADAS,
-    SIMBOLOS,
-    CONVENCAO_CLASSES,
-    CONVENCAO_RELACOES,
-    CONVENCAO_INSTANCIAS,
-    TIPOS_NATIVOS,
-    NOVOS_TIPOS,
-    META_ATRIBUTOS
-};
 
 char **fileList;
 unsigned nFiles;
 unsigned currentFile = 0;
 bool openFile = false;
+
+SymbolTable symbolTable = SymbolTable();
 
 ifstream fin;
 %}
@@ -48,38 +40,38 @@ novosTipos                {letra}+DataType
 %% 
 {brancos}	              ;
 
-{estereotipoClasse}       cout << "ESTEREOTIPO_CLASSE: " << yytext << endl;
-{estereotipoRelacao}      cout << "ESTEREOTIPO_RELACAO: " << yytext << endl;
-{reservadas}              cout << "RESERVADA: " << yytext << endl;
-{tipoNativo}              cout << "TIPO_NATIVO: " << yytext << endl;
-{metaAtributos}           cout << "META_ATRIBUTO: " << yytext << endl;
+{estereotipoClasse}       symbolTable.insert(yytext, ESTEREOTIPO_CLASSES);
+{estereotipoRelacao}      symbolTable.insert(yytext, ESTEREOTIPO_RELACOES);
+{reservadas}              symbolTable.insert(yytext, RESERVADAS);
+{tipoNativo}              symbolTable.insert(yytext, TIPOS_NATIVOS);
+{metaAtributos}           symbolTable.insert(yytext, META_ATRIBUTOS);
 
-{novosTipos}              cout << "NOVO_TIPO: " << yytext << endl;
-{convencaoIdentificador}  cout << "CONVENCAO_IDENTIFICADOR: " << yytext << endl;
-{convencaoRelacoes}       cout << "CONVENCAO_RELACAO: " << yytext << endl;
-{convencaoInstancias}     cout << "CONVENCAO_INSTANCIA: " << yytext << endl;
+{novosTipos}              symbolTable.insert(yytext, NOVOS_TIPOS);
+{convencaoIdentificador}  symbolTable.insert(yytext, CONVENCAO_CLASSES);
+{convencaoRelacoes}       symbolTable.insert(yytext, CONVENCAO_RELACOES);
+{convencaoInstancias}     symbolTable.insert(yytext, CONVENCAO_INSTANCIAS);
 
-{num}                     cout << "NUM: " << yytext << endl;
+{num}                     symbolTable.insert(yytext, NUM);
 
-"<"                       cout << "SIMBOLO: " << yytext << endl;
-">"                       cout << "SIMBOLO: " << yytext << endl;
-"{"                       cout << "SIMBOLO: " << yytext << endl;
-"}"                       cout << "SIMBOLO: " << yytext << endl;
-"("                       cout << "SIMBOLO: " << yytext << endl;
-")"                       cout << "SIMBOLO: " << yytext << endl;
-"["                       cout << "SIMBOLO: " << yytext << endl;
-"]"                       cout << "SIMBOLO: " << yytext << endl;
-"-"                       cout << "SIMBOLO: " << yytext << endl;
-"--"                      cout << "SIMBOLO: " << yytext << endl;
-"..."                     cout << "SIMBOLO: " << yytext << endl;
-"<>--"                    cout << "SIMBOLO: " << yytext << endl;
-"--<>"                    cout << "SIMBOLO: " << yytext << endl;
-"*"                       cout << "SIMBOLO: " << yytext << endl;
-"@"                       cout << "SIMBOLO: " << yytext << endl;
-":"                       cout << "SIMBOLO: " << yytext << endl;
-";"                       cout << "SIMBOLO: " << yytext << endl;
-"<o>--"                   cout << "SIMBOLO: " << yytext << endl;
-"--<o>"                   cout << "SIMBOLO: " << yytext << endl;
+"<"                       symbolTable.insert(yytext, SIMBOLOS);
+">"                       symbolTable.insert(yytext, SIMBOLOS);
+"{"                       symbolTable.insert(yytext, SIMBOLOS);
+"}"                       symbolTable.insert(yytext, SIMBOLOS);
+"("                       symbolTable.insert(yytext, SIMBOLOS);
+")"                       symbolTable.insert(yytext, SIMBOLOS);
+"["                       symbolTable.insert(yytext, SIMBOLOS);
+"]"                       symbolTable.insert(yytext, SIMBOLOS);
+"-"                       symbolTable.insert(yytext, SIMBOLOS);
+"--"                      symbolTable.insert(yytext, SIMBOLOS);
+"..."                     symbolTable.insert(yytext, SIMBOLOS);
+"<>--"                    symbolTable.insert(yytext, SIMBOLOS);
+"--<>"                    symbolTable.insert(yytext, SIMBOLOS);
+"*"                       symbolTable.insert(yytext, SIMBOLOS);
+"@"                       symbolTable.insert(yytext, SIMBOLOS);
+":"                       symbolTable.insert(yytext, SIMBOLOS);
+";"                       symbolTable.insert(yytext, SIMBOLOS);
+"<o>--"                   symbolTable.insert(yytext, SIMBOLOS);
+"--<o>"                   symbolTable.insert(yytext, SIMBOLOS);
 
 %%
 
@@ -107,6 +99,9 @@ int yyFlexLexer::yywrap()
 	{    
 		openFile = false;
 		fin.close();
+
+		cout << "Exporting Symbol Table\n";
+		symbolTable.toCSV("symbol_table.csv");
 	}
 
 	// enquanto existir arquivos para processar, tentar abrir o próximo

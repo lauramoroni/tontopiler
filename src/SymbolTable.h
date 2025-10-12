@@ -1,12 +1,16 @@
+#ifndef SYMBOLTABLE_H
+#define SYMBOLTABLE_H
+
 #include <unordered_map>
 #include <string>
+#include "token.h"
 
 using namespace std;
 
 
 struct Symbol
 {
-   const char* lexeme;
+   string lexeme;
    int token;
 };
 
@@ -20,4 +24,8 @@ public:
 
    bool insert(const char* lexeme, int token);
    Symbol* lookup(const char* lexeme);
+
+   void toCSV(const char* filename);
 };
+
+#endif
