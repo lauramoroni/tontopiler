@@ -69,6 +69,7 @@ novosTipos                {letra}+DataType
 ")"                       cout << "SIMBOLO: " << yytext << endl;
 "["                       cout << "SIMBOLO: " << yytext << endl;
 "]"                       cout << "SIMBOLO: " << yytext << endl;
+"-"                       cout << "SIMBOLO: " << yytext << endl;
 "--"                      cout << "SIMBOLO: " << yytext << endl;
 "..."                     cout << "SIMBOLO: " << yytext << endl;
 "<>--"                    cout << "SIMBOLO: " << yytext << endl;

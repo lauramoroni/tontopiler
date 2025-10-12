@@ -1,36 +1,30 @@
 #include "SymbolTable.h"
-#include <unordered_map>
-#include <string>
 
-using namespace std;
 
-class SymbolTable {
-   private:
-   unordered_map<string, Symbol> symbolMap;
+SymbolTable::SymbolTable() : symbolMap() {}
 
-   public:
-   bool insert(const char* lexeme, int token) {
-      string key(lexeme);
 
-      if (symbolMap.find(key) != symbolMap.end()) {
-         return false;
-      }
+bool SymbolTable::insert(const char* lexeme, int token) {
+   string key(lexeme);
 
-      symbolMap[key] = {lexeme, token};
+   if (symbolMap.find(key) != symbolMap.end()) {
+      return false;
+   }
 
-      return true;
+   symbolMap[key] = {lexeme, token};
+
+   return true;
+}
+
+
+Symbol* SymbolTable::lookup(const char* lexeme) {
+   string key(lexeme);
+
+   auto it = symbolMap.find(key);
+
+   if (it != symbolMap.end()) {
+      return &it->second;
    }
    
-   Symbol* lookup(const char* lexeme) {
-      string key(lexeme);
-
-      auto it = symbolMap.find(key);
-
-      if (it != symbolMap.end()) {
-         return &it->second;
-      }
-      
-      return nullptr;
-   }
-
-};
+   return nullptr;
+}
