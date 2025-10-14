@@ -12,7 +12,8 @@ enum TokenType {
     CONVENCAO_INSTANCIAS,
     TIPOS_NATIVOS,
     NOVOS_TIPOS,
-    META_ATRIBUTOS
+    META_ATRIBUTOS,
+    TOKEN_DESCONHECIDO
 };
 
 inline const char* tokenToString(int token) {

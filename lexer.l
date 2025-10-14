@@ -6,11 +6,11 @@
 
 using namespace std;
 
-
 char **fileList;
 unsigned nFiles;
 unsigned currentFile = 0;
 bool openFile = false;
+bool hasError = false;
 
 SymbolTable symbolTable = SymbolTable();
 
@@ -70,8 +70,17 @@ novosTipos                {letra}+DataType
 "@"                       symbolTable.insert(yytext, SIMBOLOS);
 ":"                       symbolTable.insert(yytext, SIMBOLOS);
 ";"                       symbolTable.insert(yytext, SIMBOLOS);
+","                       symbolTable.insert(yytext, SIMBOLOS);
 "<o>--"                   symbolTable.insert(yytext, SIMBOLOS);
 "--<o>"                   symbolTable.insert(yytext, SIMBOLOS);
+
+.                         { 
+                           symbolTable.insert(yytext, TOKEN_DESCONHECIDO);
+                           cerr << "Erro Léxico: Caractere inesperado '" << yytext 
+                                 << "' na linha " << yylineno << endl;
+							      hasError = true;
+                          }
+
 
 %%
 
@@ -89,6 +98,17 @@ int main(int argc, char ** argv)
         cout << "-=-=-=- Analisador Léxico -=-=-=-\n\n";
 		lexer.yylex();
 	}
+
+	if (hasError)
+	{
+		cout << "\nAnálise Léxica finalizada com erros.\n";
+		return 1;
+	}
+	else
+	{
+		cout << "\nAnálise Léxica finalizada sem erros.\n";
+		return 0;
+	}
 }
 
 
@@ -101,7 +121,7 @@ int yyFlexLexer::yywrap()
 		fin.close();
 
 		cout << "Exporting Symbol Table\n";
-		symbolTable.toCSV("symbol_table.csv");
+		symbolTable.toTSV("symbol_table.tsv");
 	}
 
 	// enquanto existir arquivos para processar, tentar abrir o próximo
