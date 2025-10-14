@@ -86,8 +86,16 @@ novosTipos                {letra}+DataType
 
 int main(int argc, char ** argv)
 {	
-    nFiles = argc - 1;  	     // quantidade de arquivos
-    fileList = argv + 1;         // nomes dos arquivos
+
+	if (argc < 2) 
+	{
+		cerr << "Erro: Nenhum arquivo de entrada foi fornecido.\n";
+		cerr << "Uso: " << argv[0] << " <arquivo1> [<arquivo2> ... <arquivoN>]\n";
+		return 1;
+	}
+
+   nFiles = argc - 1;  	     // quantidade de arquivos
+   fileList = argv + 1;         // nomes dos arquivos
 	
 	yyFlexLexer lexer;
     lexer.switch_streams(&fin);
