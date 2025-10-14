@@ -39,7 +39,7 @@ void SymbolTable::toTSV(const char* filename) {
       return;
    }
 
-   fprintf(file, "Lexeme\tToken\n");
+   fprintf(file, "Lexeme\tToken\tOccurrences\n");
 
    for (const auto& pair : symbolMap) {
       const char* token_string = tokenToString(pair.second.token);
