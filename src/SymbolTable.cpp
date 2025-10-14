@@ -31,7 +31,7 @@ Symbol* SymbolTable::lookup(const char* lexeme) {
 }
 
 
-void SymbolTable::toCSV(const char* filename) {
+void SymbolTable::toTSV(const char* filename) {
    FILE* file = fopen(filename, "w");
 
    if (!file) {
@@ -39,11 +39,11 @@ void SymbolTable::toCSV(const char* filename) {
       return;
    }
 
-   fprintf(file, "Lexeme,Token\n");
+   fprintf(file, "Lexeme\tToken\n");
 
    for (const auto& pair : symbolMap) {
       const char* token_string = tokenToString(pair.second.token);
-      fprintf(file, "%s,%s,%d\n", pair.second.lexeme.c_str(), token_string, pair.second.occurrences);
+      fprintf(file, "%s\t%s\t%d\n", pair.second.lexeme.c_str(), token_string, pair.second.occurrences);
    }
 
    fclose(file);

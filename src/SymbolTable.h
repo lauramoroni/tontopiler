@@ -26,7 +26,7 @@ public:
    bool insert(const char* lexeme, int token);
    Symbol* lookup(const char* lexeme);
 
-   void toCSV(const char* filename);
+   void toTSV(const char* filename);
 };
 
 #endif
