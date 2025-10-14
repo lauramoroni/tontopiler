@@ -17,7 +17,7 @@ SymbolTable symbolTable = SymbolTable();
 ifstream fin;
 %}
 
-delim	                  [ \s\t\n]
+delim	                  [ \t\n]
 brancos                   {delim}+
 letra	                  [A-Za-z]
 maiuscula                 [A-Z]
