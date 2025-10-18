@@ -42,42 +42,42 @@ novosTipos                {letra}+DataType
 %% 
 {brancos}	              ;
 
-{estereotipoClasse}       symbolTable.insert(yytext, ESTEREOTIPO_CLASSES);
-{estereotipoRelacao}      symbolTable.insert(yytext, ESTEREOTIPO_RELACOES);
-{reservadas}              symbolTable.insert(yytext, RESERVADAS);
-{tipoNativo}              symbolTable.insert(yytext, TIPOS_NATIVOS);
-{metaAtributos}           symbolTable.insert(yytext, META_ATRIBUTOS);
+{estereotipoClasse}       symbolTable.insert(yytext, ESTEREOTIPO_CLASSES, yylineno);
+{estereotipoRelacao}      symbolTable.insert(yytext, ESTEREOTIPO_RELACOES, yylineno);
+{reservadas}              symbolTable.insert(yytext, RESERVADAS, yylineno);
+{tipoNativo}              symbolTable.insert(yytext, TIPOS_NATIVOS, yylineno);
+{metaAtributos}           symbolTable.insert(yytext, META_ATRIBUTOS, yylineno);
 
-{novosTipos}              symbolTable.insert(yytext, NOVOS_TIPOS);
-{convencaoIdentificador}  symbolTable.insert(yytext, CONVENCAO_CLASSES);
-{convencaoRelacoes}       symbolTable.insert(yytext, CONVENCAO_RELACOES);
-{convencaoInstancias}     symbolTable.insert(yytext, CONVENCAO_INSTANCIAS);
+{novosTipos}              symbolTable.insert(yytext, NOVOS_TIPOS, yylineno);
+{convencaoIdentificador}  symbolTable.insert(yytext, CONVENCAO_CLASSES, yylineno);
+{convencaoRelacoes}       symbolTable.insert(yytext, CONVENCAO_RELACOES, yylineno);
+{convencaoInstancias}     symbolTable.insert(yytext, CONVENCAO_INSTANCIAS, yylineno);
 
-{num}                     symbolTable.insert(yytext, NUM);
+{num}                     symbolTable.insert(yytext, NUM, yylineno);
 
-"<"                       symbolTable.insert(yytext, SIMBOLOS);
-">"                       symbolTable.insert(yytext, SIMBOLOS);
-"{"                       symbolTable.insert(yytext, SIMBOLOS);
-"}"                       symbolTable.insert(yytext, SIMBOLOS);
-"("                       symbolTable.insert(yytext, SIMBOLOS);
-")"                       symbolTable.insert(yytext, SIMBOLOS);
-"["                       symbolTable.insert(yytext, SIMBOLOS);
-"]"                       symbolTable.insert(yytext, SIMBOLOS);
-"-"                       symbolTable.insert(yytext, SIMBOLOS);
-"--"                      symbolTable.insert(yytext, SIMBOLOS);
-"..."                     symbolTable.insert(yytext, SIMBOLOS);
-"<>--"                    symbolTable.insert(yytext, SIMBOLOS);
-"--<>"                    symbolTable.insert(yytext, SIMBOLOS);
-"*"                       symbolTable.insert(yytext, SIMBOLOS);
-"@"                       symbolTable.insert(yytext, SIMBOLOS);
-":"                       symbolTable.insert(yytext, SIMBOLOS);
-";"                       symbolTable.insert(yytext, SIMBOLOS);
-","{brancos}              symbolTable.insert(yytext, SIMBOLOS);
-"<o>--"                   symbolTable.insert(yytext, SIMBOLOS);
-"--<o>"                   symbolTable.insert(yytext, SIMBOLOS);
+"<"                       symbolTable.insert(yytext, SIMBOLOS, yylineno);
+">"                       symbolTable.insert(yytext, SIMBOLOS, yylineno);
+"{"                       symbolTable.insert(yytext, SIMBOLOS, yylineno);
+"}"                       symbolTable.insert(yytext, SIMBOLOS, yylineno);
+"("                       symbolTable.insert(yytext, SIMBOLOS, yylineno);
+")"                       symbolTable.insert(yytext, SIMBOLOS, yylineno);
+"["                       symbolTable.insert(yytext, SIMBOLOS, yylineno);
+"]"                       symbolTable.insert(yytext, SIMBOLOS, yylineno);
+"-"                       symbolTable.insert(yytext, SIMBOLOS, yylineno);
+"--"                      symbolTable.insert(yytext, SIMBOLOS, yylineno);
+"..."                     symbolTable.insert(yytext, SIMBOLOS, yylineno);
+"<>--"                    symbolTable.insert(yytext, SIMBOLOS, yylineno);
+"--<>"                    symbolTable.insert(yytext, SIMBOLOS, yylineno);
+"*"                       symbolTable.insert(yytext, SIMBOLOS, yylineno);
+"@"                       symbolTable.insert(yytext, SIMBOLOS, yylineno);
+":"                       symbolTable.insert(yytext, SIMBOLOS, yylineno);
+";"                       symbolTable.insert(yytext, SIMBOLOS, yylineno);
+","{brancos}              symbolTable.insert(yytext, SIMBOLOS, yylineno);
+"<o>--"                   symbolTable.insert(yytext, SIMBOLOS, yylineno);
+"--<o>"                   symbolTable.insert(yytext, SIMBOLOS, yylineno);
 
 .                         { 
-                           symbolTable.insert(yytext, TOKEN_DESCONHECIDO);
+                           symbolTable.insert(yytext, TOKEN_DESCONHECIDO, yylineno);
                            cerr << "Erro Léxico: Caractere inesperado '" << yytext 
                                  << "' na linha " << yylineno << endl;
 							      hasError = true;

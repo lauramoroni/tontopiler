@@ -3,6 +3,7 @@
 
 #include <unordered_map>
 #include <string>
+#include <vector>
 #include "token.h"
 
 using namespace std;
@@ -13,6 +14,7 @@ struct Symbol
    string lexeme;
    int token;
    int occurrences;
+   vector<int> lineNumbers;
 };
 
 
@@ -23,7 +25,7 @@ private:
 public:
    SymbolTable();
 
-   bool insert(const char* lexeme, int token);
+   bool insert(const char* lexeme, int token, int lineNumber);
    Symbol* lookup(const char* lexeme);
 
    void toTSV(const char* filename);
