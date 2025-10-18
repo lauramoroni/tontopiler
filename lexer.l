@@ -72,7 +72,7 @@ novosTipos                {letra}+DataType
 "@"                       symbolTable.insert(yytext, SIMBOLOS);
 ":"                       symbolTable.insert(yytext, SIMBOLOS);
 ";"                       symbolTable.insert(yytext, SIMBOLOS);
-","                       symbolTable.insert(yytext, SIMBOLOS);
+","{brancos}              symbolTable.insert(yytext, SIMBOLOS);
 "<o>--"                   symbolTable.insert(yytext, SIMBOLOS);
 "--<o>"                   symbolTable.insert(yytext, SIMBOLOS);
 
