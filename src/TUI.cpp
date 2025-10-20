@@ -515,10 +515,10 @@ void consultLexeme(WINDOW* parent_win) {
         mvwprintw(win, 4, 2, "Token: %s", tokenToString(symbol->token));
         mvwprintw(win, 5, 2, "Occurrences: %d", symbol->occurrences);
         
-        string lines = "Lines: ";
-        for (size_t i = 0; i < symbol->lineNumbers.size(); ++i) {
-            lines += to_string(symbol->lineNumbers[i]);
-            if (i < symbol->lineNumbers.size() - 1) {
+        string lines = "Positions (line, column): ";
+        for (size_t i = 0; i < symbol->positions.size(); ++i) {
+            lines += "(" + to_string(symbol->positions[i].first) + "," + to_string(symbol->positions[i].second) + ")";
+            if (i < symbol->positions.size() - 1) {
                 lines += ", ";
             }
         }

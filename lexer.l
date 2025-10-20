@@ -15,6 +15,7 @@ using namespace std;
 
 SymbolTable symbolTable;
 bool hasError = false;
+int yycolumn = 1;
 %}
 
 delim	                  [ \t\n]
@@ -36,42 +37,55 @@ novosTipos                {letra}+DataType
 
 
 %%
-{brancos}	              ;
-{estereotipoClasse}       symbolTable.insert(yytext, ESTEREOTIPO_CLASSES, yylineno);
-{estereotipoRelacao}      symbolTable.insert(yytext, ESTEREOTIPO_RELACOES, yylineno);
-{reservadas}              symbolTable.insert(yytext, RESERVADAS, yylineno);
-{tipoNativo}              symbolTable.insert(yytext, TIPOS_NATIVOS, yylineno);
-{metaAtributos}           symbolTable.insert(yytext, META_ATRIBUTOS, yylineno);
-{novosTipos}              symbolTable.insert(yytext, NOVOS_TIPOS, yylineno);
-{convencaoIdentificador}  symbolTable.insert(yytext, CONVENCAO_CLASSES, yylineno);
-{convencaoRelacoes}       symbolTable.insert(yytext, CONVENCAO_RELACOES, yylineno);
-{convencaoInstancias}     symbolTable.insert(yytext, CONVENCAO_INSTANCIAS, yylineno);
-{num}                     symbolTable.insert(yytext, NUM, yylineno);
-"<"                       symbolTable.insert(yytext, SIMBOLOS, yylineno);
-">"                       symbolTable.insert(yytext, SIMBOLOS, yylineno);
-"{"                       symbolTable.insert(yytext, SIMBOLOS, yylineno);
-"}"                       symbolTable.insert(yytext, SIMBOLOS, yylineno);
-"("                       symbolTable.insert(yytext, SIMBOLOS, yylineno);
-")"                       symbolTable.insert(yytext, SIMBOLOS, yylineno);
-"["                       symbolTable.insert(yytext, SIMBOLOS, yylineno);
-"]"                       symbolTable.insert(yytext, SIMBOLOS, yylineno);
-"-"                       symbolTable.insert(yytext, SIMBOLOS, yylineno);
-"--"                      symbolTable.insert(yytext, SIMBOLOS, yylineno);
-"..."                     symbolTable.insert(yytext, SIMBOLOS, yylineno);
-"<>--"                    symbolTable.insert(yytext, SIMBOLOS, yylineno);
-"--<>"                    symbolTable.insert(yytext, SIMBOLOS, yylineno);
-"*"                       symbolTable.insert(yytext, SIMBOLOS, yylineno);
-"@"                       symbolTable.insert(yytext, SIMBOLOS, yylineno);
-":"                       symbolTable.insert(yytext, SIMBOLOS, yylineno);
-";"                       symbolTable.insert(yytext, SIMBOLOS, yylineno);
-","{brancos}              symbolTable.insert(yytext, SIMBOLOS, yylineno);
-"<o>--"                   symbolTable.insert(yytext, SIMBOLOS, yylineno);
-"--<o>"                   symbolTable.insert(yytext, SIMBOLOS, yylineno);
+\n				          { 
+                            yycolumn = 1; // reseta coluna no fim da linha
+                          }
+[ \t]+                    {
+                            // espaços e tabs: atualiza coluna (tabs avançam para o próximo tab stop em 8)
+                            for (int i = 0; i < yyleng; ++i) {
+                                if (yytext[i] == '\t') {
+                                    yycolumn = ((yycolumn - 1) / 8 + 1) * 8 + 1;
+                                } else {
+                                    yycolumn++;
+                                }
+                            }
+                          }
+{estereotipoClasse}       { symbolTable.insert(yytext, ESTEREOTIPO_CLASSES, yylineno, yycolumn); yycolumn += yyleng; }
+{estereotipoRelacao}      { symbolTable.insert(yytext, ESTEREOTIPO_RELACOES, yylineno, yycolumn); yycolumn += yyleng; }
+{reservadas}              { symbolTable.insert(yytext, RESERVADAS, yylineno, yycolumn); yycolumn += yyleng; }
+{tipoNativo}              { symbolTable.insert(yytext, TIPOS_NATIVOS, yylineno, yycolumn); yycolumn += yyleng; }
+{metaAtributos}           { symbolTable.insert(yytext, META_ATRIBUTOS, yylineno, yycolumn); yycolumn += yyleng; }
+{novosTipos}              { symbolTable.insert(yytext, NOVOS_TIPOS, yylineno, yycolumn); yycolumn += yyleng; }
+{convencaoIdentificador}  { symbolTable.insert(yytext, CONVENCAO_CLASSES, yylineno, yycolumn); yycolumn += yyleng; }
+{convencaoRelacoes}       { symbolTable.insert(yytext, CONVENCAO_RELACOES, yylineno, yycolumn); yycolumn += yyleng; }
+{convencaoInstancias}     { symbolTable.insert(yytext, CONVENCAO_INSTANCIAS, yylineno, yycolumn); yycolumn += yyleng; }
+{num}                     { symbolTable.insert(yytext, NUM, yylineno, yycolumn); yycolumn += yyleng; }
+"<"                       { symbolTable.insert(yytext, SIMBOLOS, yylineno, yycolumn); yycolumn += yyleng; }
+">"                       { symbolTable.insert(yytext, SIMBOLOS, yylineno, yycolumn); yycolumn += yyleng; }
+"{"                       { symbolTable.insert(yytext, SIMBOLOS, yylineno, yycolumn); yycolumn += yyleng; }
+"}"                       { symbolTable.insert(yytext, SIMBOLOS, yylineno, yycolumn); yycolumn += yyleng; }
+"("                       { symbolTable.insert(yytext, SIMBOLOS, yylineno, yycolumn); yycolumn += yyleng; }
+")"                       { symbolTable.insert(yytext, SIMBOLOS, yylineno, yycolumn); yycolumn += yyleng; }
+"["                       { symbolTable.insert(yytext, SIMBOLOS, yylineno, yycolumn); yycolumn += yyleng; }
+"]"                       { symbolTable.insert(yytext, SIMBOLOS, yylineno, yycolumn); yycolumn += yyleng; }
+"-"                       { symbolTable.insert(yytext, SIMBOLOS, yylineno, yycolumn); yycolumn += yyleng; }
+"--"                      { symbolTable.insert(yytext, SIMBOLOS, yylineno, yycolumn); yycolumn += yyleng; }
+"..."                     { symbolTable.insert(yytext, SIMBOLOS, yylineno, yycolumn); yycolumn += yyleng; }
+"<>--"                    { symbolTable.insert(yytext, SIMBOLOS, yylineno, yycolumn); yycolumn += yyleng; }
+"--<>"                    { symbolTable.insert(yytext, SIMBOLOS, yylineno, yycolumn); yycolumn += yyleng; }
+"*"                       { symbolTable.insert(yytext, SIMBOLOS, yylineno, yycolumn); yycolumn += yyleng; }
+"@"                       { symbolTable.insert(yytext, SIMBOLOS, yylineno, yycolumn); yycolumn += yyleng; }
+":"                       { symbolTable.insert(yytext, SIMBOLOS, yylineno, yycolumn); yycolumn += yyleng; }
+";"                       { symbolTable.insert(yytext, SIMBOLOS, yylineno, yycolumn); yycolumn += yyleng; }
+","{brancos}              { symbolTable.insert(yytext, SIMBOLOS, yylineno, yycolumn); yycolumn += yyleng; }
+"<o>--"                   { symbolTable.insert(yytext, SIMBOLOS, yylineno, yycolumn); yycolumn += yyleng; }
+"--<o>"                   { symbolTable.insert(yytext, SIMBOLOS, yylineno, yycolumn); yycolumn += yyleng; }
 .                         {
-                           symbolTable.insert(yytext, TOKEN_DESCONHECIDO, yylineno);
+                           symbolTable.insert(yytext, TOKEN_DESCONHECIDO, yylineno, yycolumn);
                            // Imprime o erro no cerr, que não será capturado pelo ncurses
-                           fprintf(stderr, "Erro Léxico: Caractere inesperado '%s' na linha %d\n", yytext, yylineno);
+                           fprintf(stderr, "Erro Léxico: Caractere inesperado '%s' na linha %d, coluna %d\n", yytext, yylineno, yycolumn);
                            hasError = true;
+                           yycolumn += yyleng;
                           }
 %%
 

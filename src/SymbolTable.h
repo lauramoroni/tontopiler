@@ -15,7 +15,7 @@ struct Symbol
    string lexeme;
    int token;
    int occurrences;
-   vector<int> lineNumbers;
+   vector<pair<int, int>> positions;
 };
 
 
@@ -26,7 +26,7 @@ private:
 public:
    SymbolTable();
 
-   bool insert(const char* lexeme, int token, int lineNumber);
+   bool insert(const char* lexeme, int token, int lineNumber, int columnNumber);
    Symbol* lookup(const char* lexeme);
 
    void toTSV(const char* filename);

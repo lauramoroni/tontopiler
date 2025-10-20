@@ -5,16 +5,16 @@
 SymbolTable::SymbolTable() : symbolMap() {}
 
 
-bool SymbolTable::insert(const char* lexeme, int token, int lineNumber) {
+bool SymbolTable::insert(const char* lexeme, int token, int lineNumber, int columnNumber) {
    string key(lexeme);
 
    if (symbolMap.find(key) != symbolMap.end()) {
       symbolMap[key].occurrences++;
-      symbolMap[key].lineNumbers.push_back(lineNumber);
+      symbolMap[key].positions.push_back({lineNumber, columnNumber});
       return false;
    }
 
-   symbolMap[key] = {key, token, 1, {lineNumber}};
+   symbolMap[key] = {key, token, 1, {{lineNumber, columnNumber}}};
 
    return true;
 }
@@ -41,20 +41,15 @@ void SymbolTable::toTSV(const char* filename) {
       return;
    }
 
-   fprintf(file, "Lexeme\tToken\tOccurrences\tLineNumbers\n");
+   fprintf(file, "Lexeme\tToken\tOccurrences\tPositions (line, column)\n");
 
    for (const auto& pair : symbolMap) {
       const char* token_string = tokenToString(pair.second.token);
       fprintf(file, "%s\t%s\t%d\t", pair.second.lexeme.c_str(), token_string, pair.second.occurrences);
 
-      for (size_t i = 0; i < pair.second.lineNumbers.size(); ++i) {
-         int lineNumber = pair.second.lineNumbers[i];
-         fprintf(file, "%d", lineNumber);
-         if (i + 1 < pair.second.lineNumbers.size()) {
-            fprintf(file, ",");
-         }
+      for (const auto& pos : pair.second.positions) {
+         fprintf(file, "(%d,%d)", pos.first, pos.second);
       }
-
       fprintf(file, "\n");
    }
 
