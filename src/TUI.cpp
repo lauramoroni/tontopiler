@@ -553,12 +553,25 @@ void showTable(WINDOW* parent_win) {
     box(win, 0, 0);
     mvwprintw(win, 1, 2, "--- Symbol Table (symbol_table.tsv) ---");
 
+    // Initialize colors if supported
+    bool use_colors = false;
+    if (has_colors() && can_change_color()) {
+        start_color();
+        use_colors = true;
+        // Define a few color pairs for columns. Use modulo indexing when more columns exist.
+        init_pair(1, COLOR_WHITE, COLOR_BLACK); // Lexeme
+        init_pair(2, COLOR_CYAN, COLOR_BLACK);  // Token
+        init_pair(3, COLOR_YELLOW, COLOR_BLACK); // Occurrences
+        init_pair(4, COLOR_GREEN, COLOR_BLACK); // Line Numbers
+        init_pair(5, COLOR_MAGENTA, COLOR_BLACK);
+        init_pair(6, COLOR_BLUE, COLOR_BLACK);
+    }
+
     ifstream tsv_file("symbol_table.tsv");
-    string line;
-    int y = 3;
+    vector<string> lines;
 
     if (!tsv_file.is_open()) {
-        mvwprintw(win, y, 2, "Error: Could not open 'symbol_table.tsv'.");
+        mvwprintw(win, 3, 2, "Error: Could not open 'symbol_table.tsv'.");
         mvwprintw(win, LINES - 2, 2, "Press any key to return...");
         wrefresh(win);
         wgetch(win);
@@ -567,33 +580,239 @@ void showTable(WINDOW* parent_win) {
         return;
     }
 
-    while (getline(tsv_file, line)) {
-        if (y >= LINES - 2) {
-            mvwprintw(win, LINES - 2, 2, "Press any key for more... ('q' to quit)");
-            wrefresh(win);
-            int c = wgetch(win);
-            if (c == 'q') break;
-
-            werase(win);
-            box(win, 0, 0);
-            mvwprintw(win, 1, 2, "--- Symbol Table (symbol_table.tsv) ---");
-            y = 3;
-        }
-        
-        // Limita a linha para caber na janela
-        if (line.length() > COLS - 4) {
-            line = line.substr(0, COLS - 7) + "...";
-        }
-        
-        mvwprintw(win, y++, 2, "%s", line.c_str());
+    // Read all lines into memory so we can provide scrollable navigation
+    string lineBuf;
+    while (getline(tsv_file, lineBuf)) {
+        lines.push_back(lineBuf);
     }
-    
     tsv_file.close();
 
-    if (y < LINES - 2) {
-        mvwprintw(win, LINES - 2, 2, "End of table. Press any key to return...");
+    // Pre-split and wrap all rows so we can compute heights and render multi-line cells
+    int total = (int)lines.size();
+    vector<vector<string>> allCols(total);
+    for (int i = 0; i < total; ++i) {
+        const string& raw = lines[i];
+        size_t s = 0;
+        while (true) {
+            size_t tab = raw.find('\t', s);
+            if (tab == string::npos) {
+                allCols[i].push_back(raw.substr(s));
+                break;
+            }
+            allCols[i].push_back(raw.substr(s, tab - s));
+            s = tab + 1;
+        }
+    }
+
+    auto wrap_cell = [&](const string& cell, int w, bool lastCol) -> vector<string> {
+        vector<string> out;
+        if (w < 1) w = 1;
+        if (lastCol && cell.find(',') != string::npos) {
+            // Wrap by comma-separated tokens to keep numbers intact
+            vector<string> tokens;
+            size_t p = 0;
+            while (true) {
+                size_t q = cell.find(',', p);
+                if (q == string::npos) {
+                    string t = cell.substr(p);
+                    // trim leading spaces
+                    if (!t.empty() && t[0] == ' ') t.erase(0, 1);
+                    tokens.push_back(t);
+                    break;
+                }
+                string t = cell.substr(p, q - p);
+                if (!t.empty() && t[0] == ' ') t.erase(0, 1);
+                tokens.push_back(t);
+                p = q + 1;
+            }
+
+            string current;
+            for (size_t ti = 0; ti < tokens.size(); ++ti) {
+                string tok = tokens[ti];
+                string withComma = (ti + 1 < tokens.size()) ? tok + "," : tok;
+                if ((int)current.length() == 0) {
+                    current = withComma;
+                } else if ((int)current.length() + 1 + (int)withComma.length() <= w) {
+                    current += " " + withComma;
+                } else {
+                    out.push_back(current);
+                    current = withComma;
+                }
+            }
+            if (!current.empty()) out.push_back(current);
+            if (out.empty()) out.push_back("");
+            return out;
+        }
+
+        // Generic wrap by fixed width
+        for (size_t pos = 0; pos < cell.size();) {
+            int take = min(w, (int)cell.size() - (int)pos);
+            out.push_back(cell.substr(pos, take));
+            pos += take;
+        }
+        if (out.empty()) out.push_back("");
+        return out;
+    };
+
+    // Precompute wrapped columns and row heights
+    vector<vector<vector<string>>> wrapped(total); // wrapped[row][col] -> lines
+    vector<int> rowHeights(total, 1);
+    for (int i = 0; i < total; ++i) {
+        int ncols = max(1, (int)allCols[i].size());
+        int available = COLS - 4;
+        vector<int> colWidths(ncols, available / ncols);
+        colWidths.back() += available % ncols;
+
+        wrapped[i].resize(ncols);
+        int maxh = 1;
+        for (int j = 0; j < ncols; ++j) {
+            int w = max(1, colWidths[j] - 1);
+            wrapped[i][j] = wrap_cell(allCols[i][j], w, j == ncols - 1);
+            maxh = max(maxh, (int)wrapped[i][j].size());
+        }
+        rowHeights[i] = maxh;
+    }
+
+    // Navigation state
+    int offset = 0; // first visible row index
+    int cursor = 0; // selected row index
+    int visibleHeight = max(1, LINES - 5); // available display lines for rows
+
+    auto visibleSpanFromOffset = [&](int startIdx) {
+        int used = 0;
+        int idx = startIdx;
+        while (idx < total && used + rowHeights[idx] <= visibleHeight) {
+            used += rowHeights[idx];
+            ++idx;
+        }
+        return make_pair(used, idx - 1); // used lines and last fully visible row index
+    };
+
+    auto ensureCursorVisible = [&]() {
+        if (cursor < offset) {
+            offset = cursor;
+            return;
+        }
+        int used = 0;
+        for (int i = offset; i <= cursor; ++i) used += rowHeights[i];
+        while (used > visibleHeight) {
+            used -= rowHeights[offset];
+            offset++;
+        }
+    };
+
+    keypad(win, TRUE);
+    int ch;
+    bool done = false;
+    while (!done) {
+        werase(win);
+        box(win, 0, 0);
+        mvwprintw(win, 1, 2, "--- Symbol Table (symbol_table.tsv) ---");
+
+        // Render rows starting at offset until we run out of space
+        int yline = 3;
+        for (int idx = offset; idx < total; ++idx) {
+            if (yline > LINES - 3) break;
+            int h = rowHeights[idx];
+            if (yline + h - 1 > LINES - 3) break; // won't fit
+
+            int ncols = max(1, (int)wrapped[idx].size());
+            int available = COLS - 4;
+            vector<int> colWidths(ncols, available / ncols);
+            colWidths.back() += available % ncols;
+
+            for (int sub = 0; sub < h; ++sub) {
+                int x = 2;
+                bool highlight = (idx == cursor);
+                for (int j = 0; j < ncols; ++j) {
+                    string cellPart = "";
+                    if (sub < (int)wrapped[idx][j].size()) cellPart = wrapped[idx][j][sub];
+                    // truncate if needed (defensive)
+                    if ((int)cellPart.length() > colWidths[j] - 1) {
+                        if (colWidths[j] > 4)
+                            cellPart = cellPart.substr(0, colWidths[j] - 4) + "...";
+                        else
+                            cellPart = cellPart.substr(0, max(0, colWidths[j] - 1));
+                    }
+
+                    if (use_colors) {
+                        int pair = (j % 6) + 1;
+                        wattron(win, COLOR_PAIR(pair));
+                        if (highlight) wattron(win, A_REVERSE);
+                        mvwprintw(win, yline + sub, x, "%s", cellPart.c_str());
+                        if (highlight) wattroff(win, A_REVERSE);
+                        wattroff(win, COLOR_PAIR(pair));
+                    } else {
+                        if (highlight) wattron(win, A_REVERSE);
+                        mvwprintw(win, yline + sub, x, "%s", cellPart.c_str());
+                        if (highlight) wattroff(win, A_REVERSE);
+                    }
+
+                    x += colWidths[j];
+                    if (x < COLS - 2) mvwprintw(win, yline + sub, x - 1, " ");
+                }
+            }
+
+            yline += h;
+        }
+
+        mvwprintw(win, LINES - 2, 2, "Arrows: navigate  PgUp/PgDn: jump  q: quit    Row %d/%d", cursor + 1, total);
         wrefresh(win);
-        wgetch(win);
+
+        ch = wgetch(win);
+        switch (ch) {
+            case 'q':
+            case 27:
+                done = true; break;
+            case KEY_DOWN:
+                if (cursor < total - 1) {
+                    cursor++;
+                    ensureCursorVisible();
+                }
+                break;
+            case KEY_UP:
+                if (cursor > 0) {
+                    cursor--;
+                    ensureCursorVisible();
+                }
+                break;
+            case KEY_NPAGE:
+                // Jump forward by visibleHeight in terms of display lines: advance offset until we've skipped visibleHeight lines
+                {
+                    int seen = 0;
+                    int i = offset;
+                    while (i < total && seen + rowHeights[i] <= visibleHeight) { seen += rowHeights[i]; ++i; }
+                    if (i < total) {
+                        offset = i;
+                        cursor = min(cursor + (i - offset), total - 1);
+                    } else {
+                        // go to last page
+                        int back = total - 1;
+                        // move offset so last rows fit
+                        int used = 0;
+                        int j = total - 1;
+                        while (j >= 0 && used + rowHeights[j] <= visibleHeight) { used += rowHeights[j]; --j; }
+                        offset = j + 1;
+                        cursor = min(cursor + visibleHeight, total - 1);
+                    }
+                }
+                ensureCursorVisible();
+                break;
+            case KEY_PPAGE:
+                // Jump backward by visibleHeight in terms of display lines
+                {
+                    if (offset == 0) break;
+                    int used = 0;
+                    int j = offset - 1;
+                    while (j >= 0 && used + rowHeights[j] <= visibleHeight) { used += rowHeights[j]; --j; }
+                    offset = max(0, j + 1);
+                    cursor = max(0, cursor - visibleHeight);
+                }
+                ensureCursorVisible();
+                break;
+            default:
+                break;
+        }
     }
 
     delwin(win);
