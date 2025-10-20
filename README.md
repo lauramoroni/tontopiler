@@ -70,6 +70,7 @@ Para compilar e executar o projeto, siga os passos abaixo:
 3.  **Execute o CMake e o Make:**
 
     ```bash
+    cd build/
     cmake ..
     make
     ```
