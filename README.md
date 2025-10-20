@@ -116,6 +116,46 @@ A tabela de símbolos é salva em um arquivo `symbol_table.tsv` no formato TSV (
 
 ![Symbol Table TSV](docs/symbol_table_tsv.gif)
 
+# Análise Léxica
+## O que é o Flex?
+[Flex](https://westes.github.io/flex/manual/) (Fast Lexical Analyzer Generator) é uma ferramenta de código aberto utilizada para gerar analisadores léxicos, também conhecidos como scanners ou tokenizers. A partir de um arquivo de entrada com especificações de padrões (expressões regulares) e ações correspondentes em código C, o Flex gera um arquivo de código-fonte em C que implementa o analisador léxico. Este analisador é capaz de reconhecer padrões em um texto de entrada e dividi-lo em uma sequência de tokens, que são as unidades léxicas fundamentais de uma linguagem de programação.
+
+## Como Funciona a Análise Léxica?
+A análise léxica é a primeira fase de um compilador. O analisador léxico, lê o código-fonte como uma sequência de caracteres e a transforma em uma sequência de **tokens**. Cada token representa uma unidade lexicalmente significativa da linguagem, como palavras-chave, identificadores, operadores, números e símbolos.
+
+O processo envolve as seguintes etapas:
+
+- Leitura do código-fonte: O analisador lê o código-fonte caractere por caractere.
+
+- Reconhecimento de padrões: Utilizando **expressões regulares**, o analisador identifica sequências de caracteres que correspondem aos padrões dos tokens da linguagem.
+
+- Geração de tokens: Para cada padrão reconhecido (lexema), o analisador léxico gera um token correspondente.
+
+- Descarte de irrelevantes: Espaços em branco, comentários e outros elementos que não fazem parte da estrutura da linguagem são geralmente ignorados.
+
+- Tabela de símbolos: O analisador léxico interage com uma tabela de símbolos para armazenar informações sobre os identificadores encontrados no código.
+
+A saída da análise léxica é uma sequência de tokens que será utilizada pela próxima fase do compilador, a análise sintática.
+
+## Definição dos Construtos para a Linguagem Tonto
+Seguindo a estrutura do Flex, os construtos da linguagem Tonto foram definidos no arquivo `lexer.l` utilizando expressões regulares.
+
+- Estereótipos de Classe (**ESTEREOTIPO_CLASSES**): Foram definidos listando todas as palavras-chave que representam estereótipos de classe.
+
+- Palavras Reservadas (**RESERVADAS**): Palavras como genset, disjoint, complete, general, specifics e package.
+
+- Nomes de Classes (**convencaoIdentificador**): Devem começar com uma letra maiúscula, seguida por letras ou sublinhados. Por exemplo: Person, Living_Person.
+
+- Nomes de Relações (**convencaoRelacoes**): Devem começar com uma letra minúscula.
+
+- Nomes de Instâncias (**convencaoInstancias**): Podem começar com qualquer letra e devem terminar com um número.
+
+- Símbolos Especiais (**SIMBOLOS**): Símbolos como `{`, `}`, `(`, `)`, `[`, `]`, `,` e `...`.
+
+- Tratamento de Erros (**TOKEN_DESCONHECIDO**): Qualquer caractere ou sequência de caracteres que não se encaixe em nenhum dos padrões definidos é tratado como um erro léxico.
+
+Cada vez que um padrão é reconhecido, o lexema correspondente é inserido na tabela de símbolos, juntamente com o seu tipo de token, número da linha e coluna onde foi encontrado.
+
 ## Colaboradores
 
 - [Laura Moroni](https://github.com/lauramoroni)
