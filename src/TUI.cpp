@@ -241,35 +241,85 @@ void browseFiles(string path) {
 void runLexer(const char* filePath) {
     ifstream fin(filePath);
     if (!fin.is_open()) {
-        cerr << "Error: Could not open file '" << filePath << "'\n";
+        // Use ncurses to show error window
+        initscr();
+        noecho();
+        cbreak();
+        curs_set(0);
+        WINDOW* w = newwin(7, COLS - 10, (LINES - 7) / 2, 5);
+        box(w, 0, 0);
+        mvwprintw(w, 1, 2, "-=-=-=- Lexical Analysis -=-=-=-");
+        mvwprintw(w, 3, 2, "Error: Could not open file '%s'", filePath);
+        mvwprintw(w, 5, 2, "Press any key to continue...");
+        wrefresh(w);
+        wgetch(w);
+        delwin(w);
+        endwin();
         return;
     }
 
-    cout << "-=-=-=- Lexical Analysis -=-=-=-\n";
-    cout << "Analysing file: " << filePath << "\n\n";
-    
+    // Setup UI for compilation status
+    initscr();
+    clear();
+    noecho();
+    cbreak();
+    curs_set(0);
+
+    bool colors_ok = false;
+    if (has_colors()) {
+        start_color();
+        colors_ok = true;
+        init_pair(10, COLOR_WHITE, COLOR_BLACK); // normal
+        init_pair(11, COLOR_GREEN, COLOR_BLACK); // success
+        init_pair(12, COLOR_RED, COLOR_BLACK);   // error
+        init_pair(13, COLOR_YELLOW, COLOR_BLACK); // info
+    }
+
+    int win_h = 9;
+    int win_w = min(COLS - 6, 80);
+    WINDOW* win = newwin(win_h, win_w, (LINES - win_h) / 2, (COLS - win_w) / 2);
+    box(win, 0, 0);
+    mvwprintw(win, 1, 2, "-=-=-=- Lexical Analysis -=-=-=-");
+    mvwprintw(win, 2, 2, "File: %s", filePath);
+    if (colors_ok) wattron(win, COLOR_PAIR(13));
+    mvwprintw(win, 4, 2, "Status: Compiling...");
+    if (colors_ok) wattroff(win, COLOR_PAIR(13));
+    mvwprintw(win, win_h - 2, 2, "Please wait...");
+    wrefresh(win);
+
+    // Run lexer (blocking). We show "Compiling..." before calling it.
     yyFlexLexer lexer;
     lexer.switch_streams(&fin, nullptr);
 
     symbolTable = SymbolTable();
     hasError = false;
-    
-    lexer.yylex();  // Call lex
-    
+
+    lexer.yylex();
+
     fin.close();
 
+    // Update status based on result
     if (hasError) {
-        cout << "\nLexical analysis finished with errors.\n";
+        if (colors_ok) wattron(win, COLOR_PAIR(12));
+        mvwprintw(win, 4, 2, "Status: Finished with errors        ");
+        if (colors_ok) wattroff(win, COLOR_PAIR(12));
+        mvwprintw(win, 5, 2, "Check the error messages printed to stderr.");
     } else {
-        cout << "\nLexical analysis completed successfully.\n";
-        cout << "Exporting symbol table to 'symbol_table.tsv'...\n";
+        if (colors_ok) wattron(win, COLOR_PAIR(11));
+        mvwprintw(win, 4, 2, "Status: Completed successfully     ");
+        if (colors_ok) wattroff(win, COLOR_PAIR(11));
+        mvwprintw(win, 5, 2, "Exporting symbol table to 'symbol_table.tsv'...");
+        wrefresh(win);
         symbolTable.toTSV("symbol_table.tsv");
+        mvwprintw(win, 6, 2, "Export complete.");
     }
 
-    cout << "\nPress [Enter] to continue...";
-    cin.clear();
-    fflush(stdin);
-    cin.get();
+    mvwprintw(win, win_h - 2, 2, "Press any key to continue...");
+    wrefresh(win);
+    wgetch(win);
+
+    delwin(win);
+    endwin();
 }
 
 
