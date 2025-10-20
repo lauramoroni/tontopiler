@@ -1,5 +1,6 @@
 #include "SymbolTable.h"
 #include <cstdio>
+#include <map>
 
 SymbolTable::SymbolTable() : symbolMap() {}
 
@@ -49,7 +50,7 @@ void SymbolTable::toTSV(const char* filename) {
       for (size_t i = 0; i < pair.second.lineNumbers.size(); ++i) {
          int lineNumber = pair.second.lineNumbers[i];
          fprintf(file, "%d", lineNumber);
-         if (i + 1 < pair.second.lineNumbers.size()) { // não adiciona vírgula após o último número
+         if (i + 1 < pair.second.lineNumbers.size()) {
             fprintf(file, ",");
          }
       }
@@ -58,4 +59,19 @@ void SymbolTable::toTSV(const char* filename) {
    }
 
    fclose(file);
+}
+
+/**
+ * @brief Count unique constructs by their token types.
+ * @return A map where the key is the TokenType and the value is the count.
+ */
+map<int, int> SymbolTable::getUniqueConstructCounts() {
+   map<int, int> counts;
+
+   for (const auto& pair : symbolMap) {
+      int tokenType = pair.second.token;
+      counts[tokenType]++;
+   }
+
+   return counts;
 }

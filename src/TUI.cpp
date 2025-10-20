@@ -12,6 +12,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <limits.h>
+#include <map>
 
 using namespace std;
 
@@ -25,10 +26,21 @@ extern SymbolTable symbolTable;
 extern bool hasError;
 
 
+// -=-=-=-=- Internal functions prototypes -=-=-=-=-
+
+// Main menu and file browser functions
 void browseFiles(string path);
 void printMenu(WINDOW* menu_win, int highlight, const vector<string>& choices);
 void printFileBrowser(WINDOW* win, int highlight, const vector<string>& files, const string& path);
 string getAbsolutePath(string path);
+
+// Analysis menu functions
+void showAnalysisMenu(const string& currentPath);
+void constructCounter(WINDOW* parent_win);
+void consultLexeme(WINDOW* parent_win);
+void showTable(WINDOW* parent_win);
+
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-==-=-==-=-=-=-=-
 
 
 void startTUI() {
@@ -121,7 +133,7 @@ void browseFiles(string path) {
         // Read directory entries
         while ((entry = readdir(dir)) != NULL) {
             string name = entry->d_name;
-            if (name == "." || name == "..") continue; // Pula . e ..
+            if (name == "." || name == "..") continue;
             
             string full_path = currentPath + "/" + name;
             struct stat st;
@@ -148,7 +160,7 @@ void browseFiles(string path) {
     cbreak();
     curs_set(0);
 
-    WINDOW* win = newwin(LINES, COLS, 0, 0); // Janela de tela cheia
+    WINDOW* win = newwin(LINES, COLS, 0, 0); // Fullscreen window
     keypad(win, TRUE);
     
     int highlight = 0;
@@ -195,12 +207,9 @@ void browseFiles(string path) {
     if (choice == 0) {
         string parentPath = getAbsolutePath(new_path);
         
-        // CORREÇÃO (Raiz): Se o caminho pai for o mesmo (já estamos na raiz),
-        // recarrega o navegador no diretório atual.
         if (parentPath == currentPath) {
             browseFiles(currentPath);
         } else {
-            // Se for diferente, navega para o pai
             browseFiles(parentPath);
         }
         return;
@@ -220,13 +229,7 @@ void browseFiles(string path) {
     } else {
         // If it's a file (.tonto), run the lexer
         runLexer(new_path.c_str());
-
-        cout << "\nAnalysis complete. Press [Enter] to return to the browser...";
-        cin.clear();
-        fflush(stdin);
-        cin.get();
-        
-        browseFiles(currentPath);
+        showAnalysisMenu(currentPath);
     }
 }
 
@@ -256,12 +259,17 @@ void runLexer(const char* filePath) {
     fin.close();
 
     if (hasError) {
-        cout << "\nAnálise Léxica finalizada com erros.\n";
+        cout << "\nLexical analysis finished with errors.\n";
     } else {
-        cout << "\nAnálise Léxica finalizada sem erros.\n";
-        cout << "Exportando Tabela de Símbolos para 'symbol_table.tsv'...\n";
+        cout << "\nLexical analysis completed successfully.\n";
+        cout << "Exporting symbol table to 'symbol_table.tsv'...\n";
         symbolTable.toTSV("symbol_table.tsv");
     }
+
+    cout << "\nPress [Enter] to continue...";
+    cin.clear();
+    fflush(stdin);
+    cin.get();
 }
 
 
@@ -275,8 +283,15 @@ void printMenu(WINDOW* menu_win, int highlight, const vector<string>& choices) {
     int x = 2, y = 2;
     werase(menu_win); // Clear the window
     box(menu_win, 0, 0); // Draw the border
-    mvwprintw(menu_win, y - 1, x, "--- TONTO COMPILER ---");
+    
+    // Título opcional
+    if (choices.size() == 2) { // Menu Principal
+        mvwprintw(menu_win, y - 1, x, "--- TONTO COMPILER ---");
+    } else { // Menu de Análise
+         mvwprintw(menu_win, y - 1, x, "--- ANALYSIS MENU ---");
+    }
     y++; // Move down a line
+
 
     for (int i = 0; i < (int)choices.size(); i++) {
         if (highlight == i) {
@@ -328,4 +343,259 @@ void printFileBrowser(WINDOW* win, int highlight, const vector<string>& files, c
         }
     }
     wrefresh(win);
+}
+
+
+/**
+ * @brief Shows the analysis menu after lexical analysis.
+ * @param currentPath The current directory path to return to.
+ */
+void showAnalysisMenu(const string& currentPath) {
+    initscr();
+    clear();
+    noecho();
+    cbreak();
+    curs_set(0);
+
+    int height = 12;
+    int width = 50;
+    int starty = (LINES - height) / 2;
+    int startx = (COLS - width) / 2;
+
+    WINDOW* menu_win = newwin(height, width, starty, startx);
+    keypad(menu_win, TRUE);
+
+    vector<string> choices = {
+        "1. Construct Counter", 
+        "2. Consult Lexeme", 
+        "3. Show Table", 
+        "4. Back to File Browser"
+    };
+    int highlight = 0;
+    int choice = -1;
+
+    while (choice != 3) { 
+        printMenu(menu_win, highlight, choices);
+        int c = wgetch(menu_win);
+        switch (c) {
+            case KEY_UP:
+                if (highlight > 0) highlight--;
+                break;
+            case KEY_DOWN:
+                if (highlight < (int)choices.size() - 1) highlight++;
+                break;
+            case 'q': // 'q' also goes back to file browser
+                choice = 3;
+                break;
+            case 10: // Enter
+                choice = highlight;
+
+                if (choice != 3) {
+                    werase(menu_win);
+                    wrefresh(menu_win);
+                    delwin(menu_win);
+                    endwin(); 
+                    
+                    switch (choice) {
+                        case 0:
+                            constructCounter(stdscr); 
+                            break;
+                        case 1:
+                            consultLexeme(stdscr);
+                            break;
+                        case 2:
+                            showTable(stdscr);
+                            break;
+                    }
+                    
+                    // The subfunction already called endwin(), so we need to re-init ncurses
+                    initscr();
+                    clear();
+                    noecho();
+                    cbreak();
+                    curs_set(0);
+                    menu_win = newwin(height, width, starty, startx);
+                    keypad(menu_win, TRUE);
+
+                    choice = -1;
+                }
+                break;  // Judson, please don't kill me
+        }
+    }
+
+    if (menu_win) {
+        werase(menu_win);
+        wrefresh(menu_win);
+        delwin(menu_win);
+    }
+    endwin();
+
+    browseFiles(currentPath);
+}
+
+
+/**
+ * @brief Count unique constructs and display them.
+ * @param parent_win Ncurses window to draw in.
+ */
+void constructCounter(WINDOW* parent_win) {
+    initscr();
+    clear();
+    noecho();
+    cbreak();
+    curs_set(0);
+    
+    WINDOW* win = newwin(LINES, COLS, 0, 0);
+    box(win, 0, 0);
+    mvwprintw(win, 1, 2, "--- Construct Counter ---");
+
+    map<int, int> counts = symbolTable.getUniqueConstructCounts();
+    int y = 3;
+    
+    mvwprintw(win, y++, 2, "%-25s | %s", "Token Type", "Occurrences");
+    mvwprintw(win, y++, 2, "--------------------------------------");
+
+    for (auto const& [tokenType, count] : counts) {
+        if (y >= LINES - 2) {
+             mvwprintw(win, y, 2, "Press any key for more...");
+             wrefresh(win);
+             wgetch(win);
+             werase(win);
+             box(win, 0, 0);
+             mvwprintw(win, 1, 2, "--- Construct Counter (Page 2) ---");
+             y = 3;
+             mvwprintw(win, y++, 2, "%-25s | %s", "Token Type", "Occurrences");
+             mvwprintw(win, y++, 2, "--------------------------------------");
+        }
+        mvwprintw(win, y++, 2, "%-25s | %d", tokenToString(tokenType), count);
+    }
+
+    mvwprintw(win, LINES - 2, 2, "Press any key to return to the menu...");
+    wrefresh(win);
+    wgetch(win);
+
+    delwin(win);
+    endwin();
+}
+
+/**
+ * @brief Consult a lexeme in the symbol table.
+ * @param parent_win Ncurses window to draw in.
+ */
+void consultLexeme(WINDOW* parent_win) {
+    initscr();
+    clear();
+    echo();
+    nocbreak();
+    curs_set(1);
+
+    WINDOW* win = newwin(LINES, COLS, 0, 0);
+    box(win, 0, 0);
+    mvwprintw(win, 1, 2, "--- Consult Lexeme ---");
+    mvwprintw(win, 3, 2, "Enter lexeme to consult: ");
+    
+    char lexeme_str[100];
+    wmove(win, 3, 28);
+    wrefresh(win);
+    
+    wgetnstr(win, lexeme_str, 99);
+
+    noecho();
+    cbreak();
+    curs_set(0);
+
+    Symbol* symbol = symbolTable.lookup(lexeme_str);
+
+    werase(win);
+    box(win, 0, 0);
+    mvwprintw(win, 1, 2, "--- Consult Lexeme Results ---");
+
+    if (symbol != nullptr) {
+        mvwprintw(win, 3, 2, "Lexeme: %s", symbol->lexeme.c_str());
+        mvwprintw(win, 4, 2, "Token: %s", tokenToString(symbol->token));
+        mvwprintw(win, 5, 2, "Occurrences: %d", symbol->occurrences);
+        
+        string lines = "Lines: ";
+        for (size_t i = 0; i < symbol->lineNumbers.size(); ++i) {
+            lines += to_string(symbol->lineNumbers[i]);
+            if (i < symbol->lineNumbers.size() - 1) {
+                lines += ", ";
+            }
+        }
+        mvwprintw(win, 6, 2, "%s", lines.c_str());
+
+    } else {
+        mvwprintw(win, 3, 2, "Lexeme '%s' not found.", lexeme_str);
+    }
+
+    mvwprintw(win, LINES - 2, 2, "Press any key to return to the menu...");
+    wrefresh(win);
+    wgetch(win);
+
+    delwin(win);
+    endwin();
+}
+
+
+/**
+ * @brief Show the symbol table from the TSV file.
+ * @param parent_win Ncurses window to draw in.
+ */
+void showTable(WINDOW* parent_win) {
+    initscr();
+    clear();
+    noecho();
+    cbreak();
+    curs_set(0);
+
+    WINDOW* win = newwin(LINES, COLS, 0, 0);
+    keypad(win, TRUE);  // Enable arrows input
+    box(win, 0, 0);
+    mvwprintw(win, 1, 2, "--- Symbol Table (symbol_table.tsv) ---");
+
+    ifstream tsv_file("symbol_table.tsv");
+    string line;
+    int y = 3;
+
+    if (!tsv_file.is_open()) {
+        mvwprintw(win, y, 2, "Error: Could not open 'symbol_table.tsv'.");
+        mvwprintw(win, LINES - 2, 2, "Press any key to return...");
+        wrefresh(win);
+        wgetch(win);
+        delwin(win);
+        endwin();
+        return;
+    }
+
+    while (getline(tsv_file, line)) {
+        if (y >= LINES - 2) {
+            mvwprintw(win, LINES - 2, 2, "Press any key for more... ('q' to quit)");
+            wrefresh(win);
+            int c = wgetch(win);
+            if (c == 'q') break;
+
+            werase(win);
+            box(win, 0, 0);
+            mvwprintw(win, 1, 2, "--- Symbol Table (symbol_table.tsv) ---");
+            y = 3;
+        }
+        
+        // Limita a linha para caber na janela
+        if (line.length() > COLS - 4) {
+            line = line.substr(0, COLS - 7) + "...";
+        }
+        
+        mvwprintw(win, y++, 2, "%s", line.c_str());
+    }
+    
+    tsv_file.close();
+
+    if (y < LINES - 2) {
+        mvwprintw(win, LINES - 2, 2, "End of table. Press any key to return...");
+        wrefresh(win);
+        wgetch(win);
+    }
+
+    delwin(win);
+    endwin();
 }

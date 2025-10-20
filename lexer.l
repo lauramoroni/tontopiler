@@ -29,7 +29,7 @@ estereotipoRelacao        material|derivation|comparative|mediation|characteriza
 reservadas                genset|disjoint|complete|general|specifics|where|package
 tipoNativo                number|string|boolean|date|time|datetime
 metaAtributos             ordered|const|derived|subsets|redefines
-convencaoIdentificador    {maiuscula}{letra}*(_{letra}+)*
+convencaoIdentificador    {maiuscula}{letra}*(_{letra}*)*
 convencaoRelacoes         {minuscula}{letra}*(_{letra}+)*
 convencaoInstancias       {letra}+_*{letra}*{digito}+
 novosTipos                {letra}+DataType

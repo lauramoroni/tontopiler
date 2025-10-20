@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include <string>
 #include <vector>
+#include <map>
 #include "token.h"
 
 using namespace std;
@@ -29,6 +30,8 @@ public:
    Symbol* lookup(const char* lexeme);
 
    void toTSV(const char* filename);
+
+   map<int, int> getUniqueConstructCounts();
 };
 
 #endif
