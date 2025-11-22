@@ -26,8 +26,8 @@ minuscula                 [a-z]
 digito	                  [0-9]
 num	                      {digito}+(\.{digito}+)?(E[+-]?{digito}+)?
 estereotipoClasse	      event|situation|process|category|mixin|phaseMixin|roleMixin|historicalRoleMixin|kind|collective|quantity|quality|mode|intrisicMode|extrinsicMode|subkind|phase|role|historicalRole
-estereotipoRelacao        material|derivation|comparative|mediation|characterization|externalDependence|componentOf|memberOf|subCollectionOf|subQualityOf|instantiation|termination|participational|participation|historicalDependence|creation|manifestation|bringsAbout|triggers|composition|aggregation|inherence|value|formal|constitution
-reservadas                genset|disjoint|complete|general|specifics|where
+estereotipoRelacao        material|derivation|comparative|mediation|characterization|externalDependence|componentOf|memberOf|subCollectionOf|subQualityOf|instantiation|termination|participational|participation|historicalDependence|creation|manifestation|bringsAbout|triggers|composition|aggregation|inherence|value|formal|constitution|specializes
+reservadas                genset|disjoint|complete|general|specifics|where|relation
 package                   package
 tipoNativo                number|string|boolean|date|time|datetime
 metaAtributos             ordered|const|derived|subsets|redefines
