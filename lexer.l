@@ -86,8 +86,6 @@ novosTipos                {letra}+
 "--<o>"                   { symbolTable.insert(yytext, SIMBOLOS, yylineno, yycolumn); yycolumn += yyleng; }
 .                         {
                            symbolTable.insert(yytext, TOKEN_DESCONHECIDO, yylineno, yycolumn);
-                           // Imprime o erro no cerr, que não será capturado pelo ncurses
-                           fprintf(stderr, "Erro Léxico: Caractere inesperado '%s' na linha %d, coluna %d\n", yytext, yylineno, yycolumn);
                            hasError = true;
                            yycolumn += yyleng;
                           }

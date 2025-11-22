@@ -303,17 +303,18 @@ void runLexer(const char* filePath) {
         if (colors_ok) wattron(win, COLOR_PAIR(12));
         mvwprintw(win, 4, 2, "Status: Finished with errors        ");
         if (colors_ok) wattroff(win, COLOR_PAIR(12));
-        mvwprintw(win, 5, 2, "Check the error messages printed to stderr.");
+        mvwprintw(win, 5, 2, "Check the errors in the analysis menu.");
     } else {
         if (colors_ok) wattron(win, COLOR_PAIR(11));
         mvwprintw(win, 4, 2, "Status: Completed successfully     ");
         if (colors_ok) wattroff(win, COLOR_PAIR(11));
         mvwprintw(win, 5, 2, "Exporting symbol table to 'symbol_table.tsv'...");
         wrefresh(win);
-        symbolTable.toTSV("symbol_table.tsv");
         mvwprintw(win, 6, 2, "Export complete.");
     }
-
+    
+    symbolTable.toTSV("symbol_table.tsv");
+    
     mvwprintw(win, win_h - 2, 2, "Press any key to continue...");
     wrefresh(win);
     wgetch(win);
