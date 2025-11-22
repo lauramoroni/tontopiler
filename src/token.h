@@ -14,6 +14,7 @@ enum TokenType {
     TIPOS_NATIVOS,
     NOVOS_TIPOS,
     META_ATRIBUTOS,
+    ENUM,
     TOKEN_DESCONHECIDO
 };
 
@@ -31,6 +32,7 @@ inline const char* tokenToString(int token) {
         case TIPOS_NATIVOS:         return "TIPOS_NATIVOS";
         case NOVOS_TIPOS:           return "NOVOS_TIPOS";
         case META_ATRIBUTOS:        return "META_ATRIBUTOS";
+        case ENUM:                  return "ENUM";
         default:                    return "TOKEN_DESCONHECIDO";
     }
 }
