@@ -6,6 +6,7 @@ enum TokenType {
     ESTEREOTIPO_CLASSES,
     ESTEREOTIPO_RELACOES,
     RESERVADAS,
+    PACKAGE,
     SIMBOLOS,
     CONVENCAO_CLASSES,
     CONVENCAO_RELACOES,
@@ -22,6 +23,7 @@ inline const char* tokenToString(int token) {
         case ESTEREOTIPO_CLASSES:   return "ESTEREOTIPO_CLASSES";
         case ESTEREOTIPO_RELACOES:  return "ESTEREOTIPO_RELACOES";
         case RESERVADAS:            return "RESERVADAS";
+        case PACKAGE:               return "PACKAGE";
         case SIMBOLOS:              return "SIMBOLOS";
         case CONVENCAO_CLASSES:     return "CONVENCAO_CLASSES";
         case CONVENCAO_RELACOES:    return "CONVENCAO_RELACOES";
