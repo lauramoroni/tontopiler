@@ -35,7 +35,7 @@ enum                      enum
 convencaoIdentificador    {maiuscula}{letra}*(_{letra}*)*
 convencaoRelacoes         {minuscula}{letra}*(_{letra}+)*
 convencaoInstancias       {letra}+_*{letra}*{digito}+
-novosTipos                {letra}+DataType
+novosTipos                {letra}+Type
 
 
 %%
@@ -65,26 +65,21 @@ novosTipos                {letra}+DataType
 {convencaoRelacoes}       { symbolTable.insert(yytext, CONVENCAO_RELACOES, yylineno, yycolumn); yycolumn += yyleng; return CONVENCAO_RELACOES; }
 {convencaoInstancias}     { symbolTable.insert(yytext, CONVENCAO_INSTANCIAS, yylineno, yycolumn); yycolumn += yyleng; return CONVENCAO_INSTANCIAS; }
 {num}                     { symbolTable.insert(yytext, NUM, yylineno, yycolumn); yycolumn += yyleng; return NUM; }
-"<"                       { symbolTable.insert(yytext, SIMBOLOS, yylineno, yycolumn); yycolumn += yyleng; }
-">"                       { symbolTable.insert(yytext, SIMBOLOS, yylineno, yycolumn); yycolumn += yyleng; }
-"{"                       { symbolTable.insert(yytext, SIMBOLOS, yylineno, yycolumn); yycolumn += yyleng; }
-"}"                       { symbolTable.insert(yytext, SIMBOLOS, yylineno, yycolumn); yycolumn += yyleng; }
-"("                       { symbolTable.insert(yytext, SIMBOLOS, yylineno, yycolumn); yycolumn += yyleng; }
-")"                       { symbolTable.insert(yytext, SIMBOLOS, yylineno, yycolumn); yycolumn += yyleng; }
-"["                       { symbolTable.insert(yytext, SIMBOLOS, yylineno, yycolumn); yycolumn += yyleng; }
-"]"                       { symbolTable.insert(yytext, SIMBOLOS, yylineno, yycolumn); yycolumn += yyleng; }
-"-"                       { symbolTable.insert(yytext, SIMBOLOS, yylineno, yycolumn); yycolumn += yyleng; }
-"--"                      { symbolTable.insert(yytext, SIMBOLOS, yylineno, yycolumn); yycolumn += yyleng; }
-"..."                     { symbolTable.insert(yytext, SIMBOLOS, yylineno, yycolumn); yycolumn += yyleng; }
-"<>--"                    { symbolTable.insert(yytext, SIMBOLOS, yylineno, yycolumn); yycolumn += yyleng; }
-"--<>"                    { symbolTable.insert(yytext, SIMBOLOS, yylineno, yycolumn); yycolumn += yyleng; }
-"*"                       { symbolTable.insert(yytext, SIMBOLOS, yylineno, yycolumn); yycolumn += yyleng; }
-"@"                       { symbolTable.insert(yytext, SIMBOLOS, yylineno, yycolumn); yycolumn += yyleng; }
-":"                       { symbolTable.insert(yytext, SIMBOLOS, yylineno, yycolumn); yycolumn += yyleng; }
-";"                       { symbolTable.insert(yytext, SIMBOLOS, yylineno, yycolumn); yycolumn += yyleng; }
-","{brancos}              { symbolTable.insert(yytext, SIMBOLOS, yylineno, yycolumn); yycolumn += yyleng; }
-"<o>--"                   { symbolTable.insert(yytext, SIMBOLOS, yylineno, yycolumn); yycolumn += yyleng; }
-"--<o>"                   { symbolTable.insert(yytext, SIMBOLOS, yylineno, yycolumn); yycolumn += yyleng; }
+"<"                       { symbolTable.insert(yytext, SIMBOLOS, yylineno, yycolumn); yycolumn += yyleng; return '<'; }
+">"                       { symbolTable.insert(yytext, SIMBOLOS, yylineno, yycolumn); yycolumn += yyleng; return '>'; }
+"{"                       { symbolTable.insert(yytext, SIMBOLOS, yylineno, yycolumn); yycolumn += yyleng; return '{'; }
+"}"                       { symbolTable.insert(yytext, SIMBOLOS, yylineno, yycolumn); yycolumn += yyleng; return '}'; }
+"("                       { symbolTable.insert(yytext, SIMBOLOS, yylineno, yycolumn); yycolumn += yyleng; return '('; }
+")"                       { symbolTable.insert(yytext, SIMBOLOS, yylineno, yycolumn); yycolumn += yyleng; return ')'; }
+"["                       { symbolTable.insert(yytext, SIMBOLOS, yylineno, yycolumn); yycolumn += yyleng; return '['; }
+"]"                       { symbolTable.insert(yytext, SIMBOLOS, yylineno, yycolumn); yycolumn += yyleng; return ']'; }
+"-"                       { symbolTable.insert(yytext, SIMBOLOS, yylineno, yycolumn); yycolumn += yyleng; return '-'; }
+"*"                       { symbolTable.insert(yytext, SIMBOLOS, yylineno, yycolumn); yycolumn += yyleng; return '*'; }
+"@"                       { symbolTable.insert(yytext, SIMBOLOS, yylineno, yycolumn); yycolumn += yyleng; return '@'; }
+":"                       { symbolTable.insert(yytext, SIMBOLOS, yylineno, yycolumn); yycolumn += yyleng; return ':'; }
+";"                       { symbolTable.insert(yytext, SIMBOLOS, yylineno, yycolumn); yycolumn += yyleng; return ';'; }
+"."                       { symbolTable.insert(yytext, SIMBOLOS, yylineno, yycolumn); yycolumn += yyleng; return '.'; }
+","{brancos}              { symbolTable.insert(yytext, SIMBOLOS, yylineno, yycolumn); yycolumn += yyleng; return ','; }
 .                         {
                            symbolTable.insert(yytext, TOKEN_DESCONHECIDO, yylineno, yycolumn);
                            hasError = true;
