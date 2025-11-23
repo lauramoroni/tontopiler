@@ -13,12 +13,17 @@ file(GLOB_RECURSE PROJECT_SOURCES "src/*.cpp")
 find_package(FLEX REQUIRED)
 FLEX_TARGET(Lexer lexer.l ${CMAKE_CURRENT_BINARY_DIR}/lex.yy.cc COMPILE_FLAGS "-+")
 
+# Bison configuration
+find_package(BISON REQUIRED)
+BISON_TARGET(Parser parser.y ${CMAKE_CURRENT_BINARY_DIR}/parser.tab.cc COMPILE_FLAGS "-d")
+
 # Ncurses configuration
 find_package(Curses REQUIRED)
 
 # Executable creation
 add_executable(tontopiler 
     ${FLEX_Lexer_OUTPUTS} 
+    ${BISON_Parser_OUTPUTS}
     ${PROJECT_SOURCES}
 )
 

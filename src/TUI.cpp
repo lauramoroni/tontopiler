@@ -1,6 +1,7 @@
 #include "TUI.h"
 #include "SymbolTable.h"
 #include "token.h"
+#include "Logger.h"
 
 #include <ncurses.h>
 #include <menu.h>
@@ -24,6 +25,23 @@ using namespace std;
 // External global from lexer.l
 extern SymbolTable symbolTable;
 extern bool hasError;
+
+// Declare yyparse
+extern int yyparse();
+
+// Global pointer for the bridge
+static yyFlexLexer* globalLexer = nullptr;
+
+// The bridge function called by the parser
+int yylex() {
+    if (globalLexer) {
+        int token = globalLexer->yylex();
+        string text = globalLexer->YYText();
+        Logger::log("Lexer: " + string(tokenToString(token)) + " (" + text + ")");
+        return token;
+    }
+    return 0;
+}
 
 
 // -=-=-=-=- Internal functions prototypes -=-=-=-=-
@@ -288,13 +306,19 @@ void runLexer(const char* filePath) {
     wrefresh(win);
 
     // Run lexer (blocking). We show "Compiling..." before calling it.
-    yyFlexLexer lexer;
-    lexer.switch_streams(&fin, nullptr);
+    Logger::init("tontopiler.log");
+    Logger::log("Starting analysis of " + string(filePath));
+
+    yyFlexLexer lexer(&fin);
+    globalLexer = &lexer;
 
     symbolTable = SymbolTable();
     hasError = false;
 
-    lexer.yylex();
+    yyparse();
+    
+    globalLexer = nullptr;
+    Logger::close();
 
     fin.close();
 

@@ -8,7 +8,6 @@
 
 #include "SymbolTable.h"
 #include "token.h"
-#include "TUI.h"
 
 using namespace std;
 
@@ -36,7 +35,7 @@ enum                      enum
 convencaoIdentificador    {maiuscula}{letra}*(_{letra}*)*
 convencaoRelacoes         {minuscula}{letra}*(_{letra}+)*
 convencaoInstancias       {letra}+_*{letra}*{digito}+
-novosTipos                {letra}+
+novosTipos                {letra}+DataType
 
 
 %%
@@ -93,12 +92,7 @@ novosTipos                {letra}+
                           }
 %%
 
-
-int main(int argc, char **argv) {
-    startTUI();
-    return 0;
-}
-
 int yyFlexLexer::yywrap() {
     return 1;
 }
+

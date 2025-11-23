@@ -1,23 +1,7 @@
 #ifndef TOKEN_H
 #define TOKEN_H
 
-enum TokenType {
-    NUM,
-    ESTEREOTIPO_CLASSES,
-    ESTEREOTIPO_RELACOES,
-    RESERVADAS,
-    PACKAGE,
-    GENSETS,
-    SIMBOLOS,
-    CONVENCAO_IDENTIFICADOR,
-    CONVENCAO_RELACOES,
-    CONVENCAO_INSTANCIAS,
-    TIPOS_NATIVOS,
-    NOVOS_TIPOS,
-    META_ATRIBUTOS,
-    ENUM,
-    TOKEN_DESCONHECIDO
-};
+#include "parser.tab.hh"
 
 inline const char* tokenToString(int token) {
     switch (token) {
@@ -35,7 +19,8 @@ inline const char* tokenToString(int token) {
         case NOVOS_TIPOS:              return "NOVOS_TIPOS";
         case META_ATRIBUTOS:           return "META_ATRIBUTOS";
         case ENUM:                     return "ENUM";
-        default:                       return "TOKEN_DESCONHECIDO";
+        case TOKEN_DESCONHECIDO:       return "TOKEN_DESCONHECIDO";
+        default:                       return "UNKNOWN";
     }
 }
 

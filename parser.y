@@ -1,9 +1,11 @@
 %{
-#include "token.h"
+#include "TUI.h"
+#include "Logger.h"
 
 int yylex(void);
 int yyparse(void);
 void yyerror(const char *s);
+extern bool hasError;
 %}
 
 %union {
@@ -24,6 +26,7 @@ void yyerror(const char *s);
 %token <str> NOVOS_TIPOS
 %token <str> META_ATRIBUTOS
 %token <str> ENUM
+%token <str> TOKEN_DESCONHECIDO
 
 %%
 ontology: 
@@ -95,3 +98,15 @@ cardinalidade:
         | '[' NUM '.' '.' NUM ']'
 
 %%
+
+void yyerror(const char *s) {
+    Logger::log("Parse error: " + std::string(s));
+    fprintf(stderr, "Parse error: %s\n", s);
+    hasError = true;
+}
+
+int main() {
+   startTUI();
+
+   return 0;
+}
