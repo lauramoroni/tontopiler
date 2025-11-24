@@ -13,7 +13,7 @@ using namespace std;
 
 
 SymbolTable symbolTable;
-bool hasError = false;
+int errorType = 0;
 int yycolumn = 1;
 %}
 
@@ -82,7 +82,7 @@ novosTipos                {letra}+Type
 ","{brancos}              { symbolTable.insert(yytext, SIMBOLOS, yylineno, yycolumn); yycolumn += yyleng; return ','; }
 .                         {
                            symbolTable.insert(yytext, TOKEN_DESCONHECIDO, yylineno, yycolumn);
-                           hasError = true;
+                           errorType = 1;
                            yycolumn += yyleng;
                           }
 %%

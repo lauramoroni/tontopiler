@@ -24,7 +24,7 @@ using namespace std;
 
 // External global from lexer.l
 extern SymbolTable symbolTable;
-extern bool hasError;
+extern int errorType;
 
 // Declare yyparse
 extern int yyparse();
@@ -78,7 +78,7 @@ void startTUI() {
     WINDOW* menu_win = newwin(height, width, starty, startx);
     keypad(menu_win, TRUE); // Enable arrow keys
 
-    vector<string> choices = {"Lexical Analysis", "Quit"};
+    vector<string> choices = {"Syntax Analysis", "Quit"};
     int highlight = 0;
     int choice = -1;
 
@@ -266,7 +266,7 @@ void runLexer(const char* filePath) {
         curs_set(0);
         WINDOW* w = newwin(7, COLS - 10, (LINES - 7) / 2, 5);
         box(w, 0, 0);
-        mvwprintw(w, 1, 2, "-=-=-=- Lexical Analysis -=-=-=-");
+        mvwprintw(w, 1, 2, "-=-=-=- Syntax Analysis -=-=-=-");
         mvwprintw(w, 3, 2, "Error: Could not open file '%s'", filePath);
         mvwprintw(w, 5, 2, "Press any key to continue...");
         wrefresh(w);
@@ -297,7 +297,7 @@ void runLexer(const char* filePath) {
     int win_w = min(COLS - 6, 80);
     WINDOW* win = newwin(win_h, win_w, (LINES - win_h) / 2, (COLS - win_w) / 2);
     box(win, 0, 0);
-    mvwprintw(win, 1, 2, "-=-=-=- Lexical Analysis -=-=-=-");
+    mvwprintw(win, 1, 2, "-=-=-=- Syntax Analysis -=-=-=-");
     mvwprintw(win, 2, 2, "File: %s", filePath);
     if (colors_ok) wattron(win, COLOR_PAIR(13));
     mvwprintw(win, 4, 2, "Status: Compiling...");
@@ -313,7 +313,7 @@ void runLexer(const char* filePath) {
     globalLexer = &lexer;
 
     symbolTable = SymbolTable();
-    hasError = false;
+    errorType = 0;
 
     yyparse();
     
@@ -323,9 +323,13 @@ void runLexer(const char* filePath) {
     fin.close();
 
     // Update status based on result
-    if (hasError) {
+    if (errorType != 0) {
         if (colors_ok) wattron(win, COLOR_PAIR(12));
-        mvwprintw(win, 4, 2, "Status: Finished with errors        ");
+        if (errorType == 1) {
+            mvwprintw(win, 4, 2, "Status: Lexical error               ");
+        } else {
+            mvwprintw(win, 4, 2, "Status: Syntax error                ");
+        }
         if (colors_ok) wattroff(win, COLOR_PAIR(12));
         mvwprintw(win, 5, 2, "Check the errors in the analysis menu.");
     } else {
