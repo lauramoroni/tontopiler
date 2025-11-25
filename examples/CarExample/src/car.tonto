@@ -11,3 +11,8 @@ relator CarOwnership {
     @mediation
     -- involvesProperty -- [1] Car
 }
+
+
+kind Person
+
+role Employee specializes Person, Car, Organization
