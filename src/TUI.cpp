@@ -686,7 +686,7 @@ void showTable(WINDOW* parent_win) {
     auto wrap_cell = [&](const string& cell, int w, bool lastCol) -> vector<string> {
         vector<string> out;
         if (w < 1) w = 1;
-        if (lastCol && cell.find(',') != string::npos) {
+        if (cell.find(',') != string::npos) {
             // Wrap by comma-separated tokens to keep numbers intact
             vector<string> tokens;
             size_t p = 0;
