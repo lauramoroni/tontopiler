@@ -1,7 +1,9 @@
 %{
 #include "TUI.h"
 #include "Logger.h"
+#include "SymbolTable.h"
 
+extern SymbolTable symbolTable;
 int yylex(void);
 int yyparse(void);
 void yyerror(const char *s);

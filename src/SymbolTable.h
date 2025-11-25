@@ -16,6 +16,8 @@ struct Symbol
    int token;
    int occurrences;
    vector<pair<int, int>> positions;
+   string construct;
+   vector<string> relationships;
 };
 
 
