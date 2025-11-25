@@ -1,4 +1,5 @@
 #include "SymbolTable.h"
+#include "Logger.h"
 #include <cstdio>
 #include <map>
 
@@ -30,6 +31,23 @@ Symbol* SymbolTable::lookup(const char* lexeme) {
    }
    
    return nullptr;
+}
+
+
+void SymbolTable::addConstruct(const char* lexeme, const char* construct) {
+   Logger::log("Adding construct " + string(construct) + " to symbol " + string(lexeme));
+   Symbol* symbol = lookup(lexeme);
+   if (symbol) {
+      symbol->construct = string(construct);
+   }
+}
+
+void SymbolTable::addRelationship(const char* lexeme, const char* relatedLexeme) {
+   Logger::log("Adding relationship from " + string(lexeme) + " to " + string(relatedLexeme));
+   Symbol* symbol = lookup(lexeme);
+   if (symbol) {
+      symbol->relationships.push_back(string(relatedLexeme));
+   }
 }
 
 

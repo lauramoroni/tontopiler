@@ -31,6 +31,9 @@ public:
    bool insert(const char* lexeme, int token, int lineNumber, int columnNumber);
    Symbol* lookup(const char* lexeme);
 
+   void addConstruct(const char* lexeme, const char* construct);
+   void addRelationship(const char* lexeme, const char* relatedLexeme);
+
    void toTSV(const char* filename);
 
    map<int, int> getUniqueConstructCounts();
