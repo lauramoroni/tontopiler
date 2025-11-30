@@ -1,4 +1,5 @@
 #include "SymbolTable.h"
+#include "Logger.h"
 #include <cstdio>
 #include <map>
 
@@ -33,6 +34,23 @@ Symbol* SymbolTable::lookup(const char* lexeme) {
 }
 
 
+void SymbolTable::addConstruct(const char* lexeme, const char* construct) {
+   Logger::log("Adding construct " + string(construct) + " to symbol " + string(lexeme));
+   Symbol* symbol = lookup(lexeme);
+   if (symbol) {
+      symbol->construct = string(construct);
+   }
+}
+
+void SymbolTable::addRelationship(const char* lexeme, const char* relatedLexeme) {
+   Logger::log("Adding relationship from " + string(lexeme) + " to " + string(relatedLexeme));
+   Symbol* symbol = lookup(lexeme);
+   if (symbol) {
+      symbol->relationships.push_back(string(relatedLexeme));
+   }
+}
+
+
 void SymbolTable::toTSV(const char* filename) {
    FILE* file = fopen(filename, "w");
 
@@ -41,15 +59,28 @@ void SymbolTable::toTSV(const char* filename) {
       return;
    }
 
-   fprintf(file, "Lexeme\tToken\tOccurrences\tPositions (line, column)\n");
+   fprintf(file, "Lexeme\tToken\tOccurrences\tPositions (line, column)\tConstruct\tRelationships\n");
 
    for (const auto& pair : symbolMap) {
       const char* token_string = tokenToString(pair.second.token);
       fprintf(file, "%s\t%s\t%d\t", pair.second.lexeme.c_str(), token_string, pair.second.occurrences);
 
-      for (const auto& pos : pair.second.positions) {
-         fprintf(file, "(%d,%d)", pos.first, pos.second);
+      for (size_t i = 0; i < pair.second.positions.size(); ++i) {
+         fprintf(file, "(%d,%d)", pair.second.positions[i].first, pair.second.positions[i].second);
+         if (i < pair.second.positions.size() - 1) {
+             fprintf(file, ", ");
+         }
       }
+      
+      fprintf(file, "\t%s\t", pair.second.construct.c_str());
+
+      for (size_t i = 0; i < pair.second.relationships.size(); ++i) {
+         fprintf(file, "%s", pair.second.relationships[i].c_str());
+         if (i < pair.second.relationships.size() - 1) {
+             fprintf(file, ", ");
+         }
+      }
+
       fprintf(file, "\n");
    }
 
