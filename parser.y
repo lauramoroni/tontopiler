@@ -17,6 +17,7 @@ extern int errorType;
 %token <str> ESTEREOTIPO_RELACOES
 %token <str> RESERVADAS
 %token <str> PACKAGE
+%token <str> IMPORT
 %token <str> GENSETS
 %token <str> SIMBOLOS
 %token <str> CONVENCAO_IDENTIFICADOR
@@ -30,7 +31,7 @@ extern int errorType;
 
 %%
 ontology: 
-      | package_declaration ontology_body { Logger::log("Reduced: ontology"); }
+      | package_declaration ontology_body { Logger::log("Reduced: ontology with package"); }
 
 ontology_body:
       | element { Logger::log("Reduced: ontology_body -> element"); }
@@ -38,8 +39,10 @@ ontology_body:
 
 package_declaration: 
       | PACKAGE CONVENCAO_IDENTIFICADOR { Logger::log("Reduced: package_declaration"); }
+      | IMPORT CONVENCAO_IDENTIFICADOR { Logger::log("Reduced: package_declaration (import)"); }
 
 element:
+      | package_declaration { Logger::log("Reduced: element -> package_declaration"); }
       | classe { Logger::log("Reduced: element -> classe"); }
       | relacao_classe { Logger::log("Reduced: element -> relacao_classe"); }
       | data_types { Logger::log("Reduced: element -> data_types"); }

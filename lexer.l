@@ -28,6 +28,7 @@ estereotipoClasse	      event|situation|process|category|mixin|phaseMixin|roleMi
 estereotipoRelacao        material|derivation|comparative|mediation|characterization|externalDependence|componentOf|memberOf|subCollectionOf|subQualityOf|instantiation|termination|participational|participation|historicalDependence|creation|manifestation|bringsAbout|triggers|composition|aggregation|inherence|value|formal|constitution|specializes
 reservadas                disjoint|complete|general|specifics|where|relation
 package                   package
+import                    import
 genset                    genset
 tipoNativo                number|string|boolean|date|time|datetime
 metaAtributos             ordered|const|derived|subsets|redefines
@@ -56,6 +57,7 @@ novosTipos                {letra}+Type
 {estereotipoRelacao}      { symbolTable.insert(yytext, ESTEREOTIPO_RELACOES, yylineno, yycolumn); yycolumn += yyleng; return ESTEREOTIPO_RELACOES; }
 {reservadas}              { symbolTable.insert(yytext, RESERVADAS, yylineno, yycolumn); yycolumn += yyleng; return RESERVADAS; }
 {package}                 { symbolTable.insert(yytext, PACKAGE, yylineno, yycolumn); yycolumn += yyleng; return PACKAGE; }
+{import}                  { symbolTable.insert(yytext, IMPORT, yylineno, yycolumn); yycolumn += yyleng; return IMPORT; }
 {genset}                  { symbolTable.insert(yytext, GENSETS, yylineno, yycolumn); yycolumn += yyleng; return GENSETS; }
 {tipoNativo}              { symbolTable.insert(yytext, TIPOS_NATIVOS, yylineno, yycolumn); yycolumn += yyleng; return TIPOS_NATIVOS; }
 {metaAtributos}           { symbolTable.insert(yytext, META_ATRIBUTOS, yylineno, yycolumn); yycolumn += yyleng; return META_ATRIBUTOS; }

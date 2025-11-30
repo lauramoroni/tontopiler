@@ -10,6 +10,7 @@ inline const char* tokenToString(int token) {
         case ESTEREOTIPO_RELACOES:     return "ESTEREOTIPO_RELACOES";
         case RESERVADAS:               return "RESERVADAS";
         case PACKAGE:                  return "PACKAGE";
+        case IMPORT:                   return "IMPORT";
         case GENSETS:                  return "GENSETS";
         case SIMBOLOS:                 return "SIMBOLOS";
         case '<':                      return "'<'";
