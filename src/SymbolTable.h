@@ -20,6 +20,15 @@ struct Symbol
    vector<string> relationships;
 };
 
+struct ConstructStats {
+   int tokenType;
+   string construct;
+   int uniqueSymbols;
+   int totalOccurrences;
+   int totalRelationships;
+};
+
+
 
 class SymbolTable {
 private:
@@ -37,6 +46,7 @@ public:
    void toTSV(const char* filename);
 
    map<int, int> getUniqueConstructCounts();
+   vector<ConstructStats> getConstructStats();
 };
 
 #endif

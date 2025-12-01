@@ -629,13 +629,13 @@ void constructCounter(WINDOW* parent_win) {
     box(win, 0, 0);
     mvwprintw(win, 1, 2, "--- Construct Counter ---");
 
-    map<int, int> counts = symbolTable.getUniqueConstructCounts();
+    vector<ConstructStats> stats = symbolTable.getConstructStats();
     int y = 3;
     
-    mvwprintw(win, y++, 2, "%-25s | %s", "Token Type", "Occurrences");
-    mvwprintw(win, y++, 2, "--------------------------------------");
+    mvwprintw(win, y++, 2, "%-30s | %-20s | %-10s | %-12s | %-10s", "Token", "Construct", "Diff Count", "Occurrences", "Rel Count");
+    mvwprintw(win, y++, 2, "--------------------------------------------------------------------------------------");
 
-    for (auto const& [tokenType, count] : counts) {
+    for (const auto& stat : stats) {
         if (y >= LINES - 2) {
              mvwprintw(win, y, 2, "Press any key for more...");
              wrefresh(win);
@@ -644,10 +644,15 @@ void constructCounter(WINDOW* parent_win) {
              box(win, 0, 0);
              mvwprintw(win, 1, 2, "--- Construct Counter (Page 2) ---");
              y = 3;
-             mvwprintw(win, y++, 2, "%-25s | %s", "Token Type", "Occurrences");
-             mvwprintw(win, y++, 2, "--------------------------------------");
+             mvwprintw(win, y++, 2, "%-30s | %-20s | %-10s | %-12s | %-10s", "Token", "Construct", "Diff Count", "Occurrences", "Rel Count");
+             mvwprintw(win, y++, 2, "--------------------------------------------------------------------------------------");
         }
-        mvwprintw(win, y++, 2, "%-25s | %d", tokenToString(tokenType), count);
+        mvwprintw(win, y++, 2, "%-30s | %-20s | %-10d | %-12d | %-10d", 
+            tokenToString(stat.tokenType), 
+            stat.construct.c_str(), 
+            stat.uniqueSymbols, 
+            stat.totalOccurrences, 
+            stat.totalRelationships);
     }
 
     mvwprintw(win, LINES - 2, 2, "Press any key to return to the menu...");
@@ -703,6 +708,17 @@ void consultLexeme(WINDOW* parent_win) {
             }
         }
         mvwprintw(win, 6, 2, "%s", lines.c_str());
+
+        mvwprintw(win, 7, 2, "Construct: %s", symbol->construct.c_str());
+
+        string rels = "Relationships: ";
+        for (size_t i = 0; i < symbol->relationships.size(); ++i) {
+            rels += symbol->relationships[i];
+            if (i < symbol->relationships.size() - 1) {
+                rels += ", ";
+            }
+        }
+        mvwprintw(win, 8, 2, "%s", rels.c_str());
 
     } else {
         mvwprintw(win, 3, 2, "Lexeme '%s' not found.", lexeme_str);

@@ -101,3 +101,26 @@ map<int, int> SymbolTable::getUniqueConstructCounts() {
 
    return counts;
 }
+
+vector<ConstructStats> SymbolTable::getConstructStats() {
+   map<pair<int, string>, ConstructStats> statsMap;
+
+   for (const auto& pair : symbolMap) {
+      const Symbol& sym = pair.second;
+      std::pair<int, string> key = {sym.token, sym.construct};
+
+      if (statsMap.find(key) == statsMap.end()) {
+         statsMap[key] = {sym.token, sym.construct, 0, 0, 0};
+      }
+
+      statsMap[key].uniqueSymbols++;
+      statsMap[key].totalOccurrences += sym.occurrences;
+      statsMap[key].totalRelationships += sym.relationships.size();
+   }
+
+   vector<ConstructStats> result;
+   for (const auto& pair : statsMap) {
+      result.push_back(pair.second);
+   }
+   return result;
+}
