@@ -57,6 +57,7 @@ novosTipos                {letra}+Type
 {estereotipoRelacao}      { yylval.str = strdup(yytext); symbolTable.insert(yytext, ESTEREOTIPO_RELACOES, yylineno, yycolumn); yycolumn += yyleng; return ESTEREOTIPO_RELACOES; }
 {reservadas}              { yylval.str = strdup(yytext); symbolTable.insert(yytext, RESERVADAS, yylineno, yycolumn); yycolumn += yyleng; return RESERVADAS; }
 {package}                 { yylval.str = strdup(yytext); symbolTable.insert(yytext, PACKAGE, yylineno, yycolumn); yycolumn += yyleng; return PACKAGE; }
+{import}                  { yylval.str = strdup(yytext); symbolTable.insert(yytext, IMPORT, yylineno, yycolumn); yycolumn += yyleng; return IMPORT; }
 {genset}                  { yylval.str = strdup(yytext); symbolTable.insert(yytext, GENSETS, yylineno, yycolumn); yycolumn += yyleng; return GENSETS; }
 {tipoNativo}              { yylval.str = strdup(yytext); symbolTable.insert(yytext, TIPOS_NATIVOS, yylineno, yycolumn); yycolumn += yyleng; return TIPOS_NATIVOS; }
 {metaAtributos}           { yylval.str = strdup(yytext); symbolTable.insert(yytext, META_ATRIBUTOS, yylineno, yycolumn); yycolumn += yyleng; return META_ATRIBUTOS; }
@@ -66,20 +67,6 @@ novosTipos                {letra}+Type
 {convencaoRelacoes}       { yylval.str = strdup(yytext); symbolTable.insert(yytext, CONVENCAO_RELACOES, yylineno, yycolumn); yycolumn += yyleng; return CONVENCAO_RELACOES; }
 {convencaoInstancias}     { yylval.str = strdup(yytext); symbolTable.insert(yytext, CONVENCAO_INSTANCIAS, yylineno, yycolumn); yycolumn += yyleng; return CONVENCAO_INSTANCIAS; }
 {num}                     { yylval.str = strdup(yytext); symbolTable.insert(yytext, NUM, yylineno, yycolumn); yycolumn += yyleng; return NUM; }
-{estereotipoClasse}       { symbolTable.insert(yytext, ESTEREOTIPO_CLASSES, yylineno, yycolumn); yycolumn += yyleng; return ESTEREOTIPO_CLASSES; }
-{estereotipoRelacao}      { symbolTable.insert(yytext, ESTEREOTIPO_RELACOES, yylineno, yycolumn); yycolumn += yyleng; return ESTEREOTIPO_RELACOES; }
-{reservadas}              { symbolTable.insert(yytext, RESERVADAS, yylineno, yycolumn); yycolumn += yyleng; return RESERVADAS; }
-{package}                 { symbolTable.insert(yytext, PACKAGE, yylineno, yycolumn); yycolumn += yyleng; return PACKAGE; }
-{import}                  { symbolTable.insert(yytext, IMPORT, yylineno, yycolumn); yycolumn += yyleng; return IMPORT; }
-{genset}                  { symbolTable.insert(yytext, GENSETS, yylineno, yycolumn); yycolumn += yyleng; return GENSETS; }
-{tipoNativo}              { symbolTable.insert(yytext, TIPOS_NATIVOS, yylineno, yycolumn); yycolumn += yyleng; return TIPOS_NATIVOS; }
-{metaAtributos}           { symbolTable.insert(yytext, META_ATRIBUTOS, yylineno, yycolumn); yycolumn += yyleng; return META_ATRIBUTOS; }
-{enum}                    { symbolTable.insert(yytext, ENUM, yylineno, yycolumn); yycolumn += yyleng; return ENUM; }
-{novosTipos}              { symbolTable.insert(yytext, NOVOS_TIPOS, yylineno, yycolumn); yycolumn += yyleng; return NOVOS_TIPOS; }
-{convencaoIdentificador}  { symbolTable.insert(yytext, CONVENCAO_IDENTIFICADOR, yylineno, yycolumn); yycolumn += yyleng; return CONVENCAO_IDENTIFICADOR; }
-{convencaoRelacoes}       { symbolTable.insert(yytext, CONVENCAO_RELACOES, yylineno, yycolumn); yycolumn += yyleng; return CONVENCAO_RELACOES; }
-{convencaoInstancias}     { symbolTable.insert(yytext, CONVENCAO_INSTANCIAS, yylineno, yycolumn); yycolumn += yyleng; return CONVENCAO_INSTANCIAS; }
-{num}                     { symbolTable.insert(yytext, NUM, yylineno, yycolumn); yycolumn += yyleng; return NUM; }
 "<"                       { symbolTable.insert(yytext, SIMBOLOS, yylineno, yycolumn); yycolumn += yyleng; return '<'; }
 ">"                       { symbolTable.insert(yytext, SIMBOLOS, yylineno, yycolumn); yycolumn += yyleng; return '>'; }
 "{"                       { symbolTable.insert(yytext, SIMBOLOS, yylineno, yycolumn); yycolumn += yyleng; return '{'; }

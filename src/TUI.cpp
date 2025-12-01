@@ -14,6 +14,8 @@
 #include <unistd.h>
 #include <limits.h>
 #include <map>
+#include <sstream>
+#include <algorithm>
 
 using namespace std;
 
@@ -31,18 +33,57 @@ extern int yyparse();
 
 // Global pointer for the bridge
 static yyFlexLexer* globalLexer = nullptr;
+static std::string g_currentLexeme = "";
+static std::string g_currentTokenString = "";
 
 // The bridge function called by the parser
 int yylex() {
     if (globalLexer) {
         int token = globalLexer->yylex();
         string text = globalLexer->YYText();
+        g_currentLexeme = text;
+        g_currentTokenString = tokenToString(token);
         Logger::log("Lexer: " + string(tokenToString(token)) + " (" + text + ")");
         return token;
     }
     return 0;
 }
 
+// -=-=-=-=- Error Handling Globals & Functions -=-=-=-=-
+
+static std::string g_lastReduction = "None";
+static std::string g_syntaxErrorMsg = "";
+
+int getLineNo() {
+    if (globalLexer) {
+        return globalLexer->lineno();
+    }
+    return 0;
+}
+
+void setLastReduction(const std::string& reduction) {
+    g_lastReduction = reduction;
+}
+
+std::string getLastReduction() {
+    return g_lastReduction;
+}
+
+void setSyntaxErrorMsg(const std::string& msg) {
+    g_syntaxErrorMsg = msg;
+}
+
+std::string getSyntaxErrorMsg() {
+    return g_syntaxErrorMsg;
+}
+
+std::string getCurrentLexeme() {
+    return g_currentLexeme;
+}
+
+std::string getCurrentTokenString() {
+    return g_currentTokenString;
+}
 
 // -=-=-=-=- Internal functions prototypes -=-=-=-=-
 
@@ -314,6 +355,8 @@ void runLexer(const char* filePath) {
 
     symbolTable = SymbolTable();
     errorType = 0;
+    setLastReduction("None");
+    setSyntaxErrorMsg("");
 
     yyparse();
     
@@ -323,24 +366,81 @@ void runLexer(const char* filePath) {
     fin.close();
 
     // Update status based on result
+    string statusLine;
+    string detailMsg = "";
+    int statusColor = 10;
+
     if (errorType != 0) {
-        if (colors_ok) wattron(win, COLOR_PAIR(12));
+        statusColor = 12; // Red
         if (errorType == 1) {
-            mvwprintw(win, 4, 2, "Status: Lexical error               ");
+            statusLine = "Status: Lexical Error";
         } else {
-            mvwprintw(win, 4, 2, "Status: Syntax error                ");
+            statusLine = "Status: Syntax Error";
+            detailMsg = getSyntaxErrorMsg();
+        }
+    } else {
+        statusColor = 11; // Green
+        statusLine = "Status: Completed successfully";
+    }
+
+    // Calculate lines needed for detailMsg
+    vector<string> wrappedLines;
+    int max_text_width = win_w - 4; // 2 padding on each side
+    if (!detailMsg.empty()) {
+        stringstream ss(detailMsg);
+        string segment;
+        while (getline(ss, segment, '\n')) {
+            string word;
+            stringstream lineSS(segment);
+            string currentLine = "";
+            while (lineSS >> word) {
+                if (currentLine.length() + word.length() + 1 > max_text_width) {
+                    wrappedLines.push_back(currentLine);
+                    currentLine = word;
+                } else {
+                    if (!currentLine.empty()) currentLine += " ";
+                    currentLine += word;
+                }
+            }
+            if (!currentLine.empty()) wrappedLines.push_back(currentLine);
+        }
+    }
+
+    // Resize window if needed
+    int required_h = 8 + wrappedLines.size(); 
+    if (required_h > win_h) {
+        delwin(win);
+        win_h = min(required_h, LINES - 2);
+        win = newwin(win_h, win_w, (LINES - win_h) / 2, (COLS - win_w) / 2);
+        box(win, 0, 0);
+    } else {
+        werase(win);
+        box(win, 0, 0);
+    }
+
+    // Draw content
+    mvwprintw(win, 1, 2, "-=-=-=- Syntax Analysis -=-=-=-");
+    mvwprintw(win, 2, 2, "File: %s", filePath);
+    
+    if (colors_ok) wattron(win, COLOR_PAIR(statusColor));
+    mvwprintw(win, 4, 2, "%s", statusLine.c_str());
+    if (colors_ok) wattroff(win, COLOR_PAIR(statusColor));
+
+    int y = 6;
+    if (!wrappedLines.empty()) {
+        if (colors_ok) wattron(win, COLOR_PAIR(12)); 
+        for (const string& line : wrappedLines) {
+            if (y >= win_h - 2) break; 
+            mvwprintw(win, y++, 2, "%s", line.c_str());
         }
         if (colors_ok) wattroff(win, COLOR_PAIR(12));
-        mvwprintw(win, 5, 2, "Check the errors in the analysis menu.");
-    } else {
-        if (colors_ok) wattron(win, COLOR_PAIR(11));
-        mvwprintw(win, 4, 2, "Status: Completed successfully     ");
-        if (colors_ok) wattroff(win, COLOR_PAIR(11));
+    } else if (errorType == 0) {
         mvwprintw(win, 5, 2, "Exporting symbol table to 'symbol_table.tsv'...");
-        wrefresh(win);
         mvwprintw(win, 6, 2, "Export complete.");
+    } else if (errorType != 0 && detailMsg.empty()) {
+         mvwprintw(win, 5, 2, "Check the errors in the analysis menu.");
     }
-    
+
     symbolTable.toTSV("symbol_table.tsv");
     
     mvwprintw(win, win_h - 2, 2, "Press any key to continue...");
@@ -348,6 +448,7 @@ void runLexer(const char* filePath) {
     wgetch(win);
 
     delwin(win);
+
     endwin();
 }
 
