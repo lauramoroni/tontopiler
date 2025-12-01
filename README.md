@@ -23,12 +23,14 @@ A linguagem Tonto foi proposta para simplificar a modelagem de ontologias, permi
 
 ## Funcionalidades
 
-O Tontopiler tem como objetivo principal realizar a análise léxica de uma ontologia especificada em Tonto. O analisador léxico oferece duas visualizações principais:
+O Tontopiler realiza a análise léxica e sintática de uma ontologia especificada em Tonto. O analisador oferece:
 
-  * **Visão analítica:** Exibe todos os tokens reconhecidos.
-  * **Tabela de síntese:** Apresenta um resumo quantitativo dos elementos da linguagem.
+  * **Verificação Sintática:** Valida se a estrutura do código segue a gramática da linguagem Tonto.
+  * **Relatório de Erros:** Indica erros léxicos e sintáticos, apontando a linha e o token esperado.
+  * **Visão analítica:** Exibe todos os tokens reconhecidos e suas propriedades.
+  * **Tabela de síntese:** Apresenta um resumo quantitativo dos elementos da linguagem (Contador de Construtos).
 
-Além disso, o analisador trata erros léxicos, indicando a linha onde ocorreram e sugerindo correções com base na especificação da linguagem
+Além disso, o analisador gera uma tabela de símbolos detalhada contendo lexemas, tokens, ocorrências e posições.
 
 ## Ferramentas Utilizadas
 
@@ -36,6 +38,7 @@ Lista das ferramentas principais usadas no projeto, com as versões detectadas n
 
 - **C++** (g++): 13.3.0 — Linguagem de programação principal do projeto.
 - **Flex**: 2.6.4 — Ferramenta para geração de analisadores léxicos.
+- **Bison**: 3.8.2 — Ferramenta para geração de analisadores sintáticos.
 - **Ncurses** (ncurses-config): 6.4.20240113 — Biblioteca para a criação de interfaces de usuário em modo texto (TUI).
 - **CMake**: 3.28.3 — Sistema de automação de compilação.
 - **Make**: GNU Make 4.3
@@ -51,13 +54,13 @@ Para compilar e executar o projeto, siga os passos abaixo:
 
       ```bash
       sudo apt-get update
-      sudo apt-get install build-essential cmake flex libncurses5-dev
+      sudo apt-get install build-essential cmake flex bison libncurses5-dev
       ```
 
     - No Fedora:
 
       ```bash
-      sudo dnf install @development-tools cmake flex ncurses-devel
+      sudo dnf install @development-tools cmake flex bison ncurses-devel
       ```
 
 2.  **Clone o repositório:**
@@ -83,37 +86,41 @@ Após a compilação, um executável chamado `tontopiler` será criado no diret�
 ./tontopiler
 ```
 
-O programa iniciará uma interface de usuário em modo texto (TUI) que permite navegar pelos diretórios, selecionar um arquivo `.tonto` para análise e visualizar os resultados. 
+O programa iniciará uma interface de usuário em modo texto (TUI). No menu inicial, selecione **"Syntax Analysis"** para começar.
+
+Você poderá navegar pelos diretórios e selecionar um arquivo `.tonto` para análise.
 
 ![Tontopiler TUI](docs/tontopiler_tui.png)
 
-A análise léxica gera um arquivo `symbol_table.tsv` com a tabela de símbolos.
+O Tontopiler realizará a análise sintática. Se houver erros, eles serão exibidos na tela. Caso contrário, o status será de sucesso e a tabela de símbolos será gerada no arquivo `symbol_table.tsv`.
 
-![Symbol Table TSV](docs/lexical_analysis_status.png)
+![Lexical Analysis Status](docs/lexical_analysis_status.png)
 
-No menu principal, você pode escolher entre as seguintes opções:
+Após a análise, o menu de resultados será exibido com as seguintes opções:
 
 ![Analysis Menu](docs/analysis_menu.png)
 
 ### Contador de Construtos
 
-Após a análise, o Tontopiler exibe um resumo dos construtos da linguagem existentes no arquivo Tonto analisado.
+Exibe um resumo dos construtos da linguagem (Classes, Relações, Pacotes, etc.) identificados no arquivo analisado.
 
 ![Construct Counter](docs/construct_counter.png)
 
 ### Consultar Lexemas
 
-O Tontopiler permite consultar lexemas específicos na tabela de símbolos, exibindo detalhes como token, ocorrências e posições (linha, coluna).
+Permite consultar lexemas específicos na tabela de símbolos, exibindo detalhes como token, ocorrências, posições (linha, coluna) e construto associado.
 
 ![Lexeme Query](docs/lexeme_query.png)
 
 ### Tabela de Símbolos
 
-A tabela de símbolos é salva em um arquivo `symbol_table.tsv` no formato TSV (Tab-Separated Values). Ela contém as seguintes colunas:
+Exibe a tabela de símbolos completa gerada a partir da análise. O arquivo `symbol_table.tsv` também é salvo no disco contendo:
 - Lexeme: O lexema reconhecido.
-- Token: O tipo de token associado ao lexema.
-- Occurrences: O número de vezes que o lexema aparece no arquivo.
-- Positions (line, column): As posições (linha, coluna) onde o lexema foi encontrado.
+- Token: O tipo de token associado.
+- Occurrences: O número de vezes que aparece.
+- Positions: As coordenadas (linha, coluna).
+- Construct: O tipo de construto gramatical (se aplicável).
+- Relationships: Relações identificadas.
 
 ![Symbol Table TSV](docs/symbol_table_tsv.gif)
 
@@ -156,6 +163,25 @@ Seguindo a estrutura do Flex, os construtos da linguagem Tonto foram definidos n
 - Tratamento de Erros (**TOKEN_DESCONHECIDO**): Qualquer caractere ou sequência de caracteres que não se encaixe em nenhum dos padrões definidos é tratado como um erro léxico.
 
 Cada vez que um padrão é reconhecido, o lexema correspondente é inserido na tabela de símbolos, juntamente com o seu tipo de token, número da linha e coluna onde foi encontrado.
+
+# Análise Sintática
+
+## Como funciona a Análise Sintática?
+A análise sintática é a segunda fase do processo de compilação. Enquanto a análise léxica identifica os tokens individuais, a análise sintática verifica se a sequência desses tokens forma sentenças válidas de acordo com a gramática da linguagem Tonto.
+
+O Tontopiler utiliza o **Bison**, um gerador de analisadores sintáticos, para esta tarefa. O analisador sintático (parser) recebe os tokens do analisador léxico e tenta construir uma estrutura gramatical (árvore de derivação). Se a sequência de tokens não corresponder a nenhuma regra da gramática, um erro sintático é reportado.
+
+## Definição das gramáticas
+As regras gramaticais da linguagem Tonto foram definidas no arquivo `parser.y`. Abaixo estão as principais estruturas reconhecidas:
+
+- **Ontologia**: A raiz da gramática. Uma ontologia pode conter declarações de pacotes e um corpo com diversos elementos.
+- **Declaração de Pacotes e Importações**: Define o escopo da ontologia (`package`) ou importa outras ontologias (`import`).
+- **Classes**: Definidas por estereótipos (ex: `kind`, `subkind`) seguidos de um identificador. Podem conter atributos com tipos nativos ou personalizados.
+- **Relações**: Podem ser definidas dentro de classes ou separadamente. Incluem estereótipos de relação, cardinalidades (ex: `[1..*]`) e a direção da relação.
+- **Generalizações**: Estruturas que definem hierarquias entre classes, utilizando palavras-chave como `genset`, `general`, `specifics`.
+- **Tipos de Dados e Enumerações**: Definições de novos tipos (`datatype`) e listas de valores permitidos (`enum`).
+
+O analisador trata erros sintáticos informando a linha e o lexema onde a falha ocorreu, e quando possível, o token que era esperado.
 
 ## Colaboradores
 
