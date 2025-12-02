@@ -3,6 +3,7 @@
 - [Tontopiler](#tontopiler)
 - [Tonto](#tonto)
 - [Funcionalidades](#funcionalidades)
+- [Estrutura do Projeto](#estrutura-do-projeto)
 - [Ferramentas Utilizadas](#ferramentas-utilizadas)
 - [Instalação](#instalação)
 - [Como Usar](#como-usar)
@@ -31,6 +32,31 @@ O Tontopiler realiza a análise léxica e sintática de uma ontologia especifica
   * **Tabela de síntese:** Apresenta um resumo quantitativo dos elementos da linguagem (Contador de Construtos).
 
 Além disso, o analisador gera uma tabela de símbolos detalhada contendo lexemas, tokens, ocorrências e posições.
+
+## Estrutura do Projeto
+
+```
+tontopiler/
+├── build/                  # Diretório de compilação (gerado pelo CMake)
+├── docs/                   # Documentação e imagens do projeto
+├── examples/               # Exemplos de arquivos .tonto
+│   ├── CarExample/
+│   ├── FoodAllergyExample/
+│   └── TDAHExample/
+├── src/                    # Código-fonte C++ auxiliar (TUI, Logger, SymbolTable)
+│   ├── Logger.cpp
+│   ├── Logger.h
+│   ├── SymbolTable.cpp
+│   ├── SymbolTable.h
+│   ├── TUI.cpp
+│   ├── TUI.h
+│   └── token.h
+├── CMakeLists.txt          # Configuração do CMake
+├── lexer.l                 # Especificação léxica (Flex)
+├── parser.y                # Especificação sintática (Bison)
+├── README.md               # Documentação do projeto
+└── teste.tonto             # Arquivo de teste
+```
 
 ## Ferramentas Utilizadas
 
