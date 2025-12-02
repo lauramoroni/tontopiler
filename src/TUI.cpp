@@ -51,7 +51,6 @@ int yylex() {
 
 // -=-=-=-=- Error Handling Globals & Functions -=-=-=-=-
 
-static std::string g_lastReduction = "None";
 static std::string g_syntaxErrorMsg = "";
 
 int getLineNo() {
@@ -59,14 +58,6 @@ int getLineNo() {
         return globalLexer->lineno();
     }
     return 0;
-}
-
-void setLastReduction(const std::string& reduction) {
-    g_lastReduction = reduction;
-}
-
-std::string getLastReduction() {
-    return g_lastReduction;
 }
 
 void setSyntaxErrorMsg(const std::string& msg) {
@@ -355,7 +346,6 @@ void runLexer(const char* filePath) {
 
     symbolTable = SymbolTable();
     errorType = 0;
-    setLastReduction("None");
     setSyntaxErrorMsg("");
 
     yyparse();

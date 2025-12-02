@@ -17,8 +17,6 @@ void runLexer(const char* filePath);
 
 // Error handling helpers
 int getLineNo();
-void setLastReduction(const std::string& reduction);
-std::string getLastReduction();
 void setSyntaxErrorMsg(const std::string& msg);
 std::string getSyntaxErrorMsg();
 std::string getCurrentLexeme();
