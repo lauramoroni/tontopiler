@@ -3,6 +3,7 @@
 - [Tontopiler](#tontopiler)
 - [Tonto](#tonto)
 - [Funcionalidades](#funcionalidades)
+- [Estrutura do Projeto](#estrutura-do-projeto)
 - [Ferramentas Utilizadas](#ferramentas-utilizadas)
 - [Instalação](#instalação)
 - [Como Usar](#como-usar)
@@ -31,6 +32,31 @@ O Tontopiler realiza a análise léxica e sintática de uma ontologia especifica
   * **Tabela de síntese:** Apresenta um resumo quantitativo dos elementos da linguagem (Contador de Construtos).
 
 Além disso, o analisador gera uma tabela de símbolos detalhada contendo lexemas, tokens, ocorrências e posições.
+
+## Estrutura do Projeto
+
+```
+tontopiler/
+├── build/                  # Diretório de compilação (gerado pelo CMake)
+├── docs/                   # Documentação e imagens do projeto
+├── examples/               # Exemplos de arquivos .tonto
+│   ├── CarExample/
+│   ├── FoodAllergyExample/
+│   └── TDAHExample/
+├── src/                    # Código-fonte C++ auxiliar (TUI, Logger, SymbolTable)
+│   ├── Logger.cpp
+│   ├── Logger.h
+│   ├── SymbolTable.cpp
+│   ├── SymbolTable.h
+│   ├── TUI.cpp
+│   ├── TUI.h
+│   └── token.h
+├── CMakeLists.txt          # Configuração do CMake
+├── lexer.l                 # Especificação léxica (Flex)
+├── parser.y                # Especificação sintática (Bison)
+├── README.md               # Documentação do projeto
+└── teste.tonto             # Arquivo de teste
+```
 
 ## Ferramentas Utilizadas
 
@@ -94,7 +120,11 @@ Você poderá navegar pelos diretórios e selecionar um arquivo `.tonto` para an
 
 O Tontopiler realizará a análise sintática. Se houver erros, eles serão exibidos na tela. Caso contrário, o status será de sucesso e a tabela de símbolos será gerada no arquivo `symbol_table.tsv`.
 
-![Lexical Analysis Status](docs/lexical_analysis_status.png)
+![Syntax Analysis Success Status](docs/syntax_analysis_success_status.png)
+
+Caso a análise falhe, uma mensagem de erro será exibida indicando a linha e o token esperado.
+
+![Syntax Analysis Error Status](docs/syntax_analysis_error_status.png)
 
 Após a análise, o menu de resultados será exibido com as seguintes opções:
 
