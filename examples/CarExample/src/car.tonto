@@ -8,6 +8,8 @@ kind Car
 
 kind Person
 
+role Teste
+
 role Employee specializes Person, Car, Organization
 
 enum EyeColor { Blue, Green, Brown, Black }

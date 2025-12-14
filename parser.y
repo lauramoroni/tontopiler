@@ -67,8 +67,8 @@ element:
       | declaracao_relacoes { Logger::log("Reduced: element -> declaracao_relacoes"); }
 
 classe:
-      | ESTEREOTIPO_CLASSES CONVENCAO_IDENTIFICADOR { symbolTable.addConstruct($2, "Classe"); Logger::log("Reduced: classe (simple)"); }
-      | ESTEREOTIPO_CLASSES CONVENCAO_IDENTIFICADOR '{' atributos '}' { symbolTable.addConstruct($2, "Classe"); Logger::log("Reduced: classe (with attributes)"); }
+      | ESTEREOTIPO_CLASSES CONVENCAO_IDENTIFICADOR { symbolTable.addConstruct($2, $1); Logger::log("Reduced: classe (simple)"); }
+      | ESTEREOTIPO_CLASSES CONVENCAO_IDENTIFICADOR '{' atributos '}' { symbolTable.addConstruct($2, $1); Logger::log("Reduced: classe (with attributes)"); }
 
 atributos:
       | atributo
@@ -152,7 +152,7 @@ generalizacao_escopo:
 
 declaracao_relacoes:
       | ESTEREOTIPO_CLASSES CONVENCAO_IDENTIFICADOR '{' relacoes_escopo '}' { 
-            symbolTable.addConstruct($2, "Classe");
+            symbolTable.addConstruct($2, $1);
             for (const auto& rel : *$4) {
                   symbolTable.addRelationship($2, rel.c_str());
             }
