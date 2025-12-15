@@ -50,6 +50,7 @@ extern int errorType;
 %type <list> relacoes_escopo
 %type <str> generalizacao_itens
 %type <str> generalizacao_escopo
+%type <str> reservadas_genset
 
 
 %%
@@ -111,7 +112,6 @@ relacao_classe:
 
             for (const auto& rel : *$4) {
                   symbolTable.addRelationship($2, (string($3) + string(":") + rel).c_str());
-
                   symbolTable.addSemanticPattern(rel.c_str(), (string($1) + string(":") + string($2)).c_str());
             }
 
@@ -194,13 +194,50 @@ generalizacoes:
       }
       | reservadas_genset GENSETS CONVENCAO_IDENTIFICADOR '{' generalizacao_escopo '}' { 
             symbolTable.addConstruct($3, "Generalizacao"); Logger::log("Reduced: generalizacoes (without reservadas)");
+            vector<string> generalPatterns = symbolTable.getSemanticPatternsForLexeme($5);
+
+            if (string($1) == "disjoint") {
+                  // if generalPatterns has "role", it's a semantic error, as role cannot be disjoint
+                  for (const auto& pattern : generalPatterns) {
+                        if (pattern.find("role") != string::npos) {
+                              std::string msg = "SEMANTIC_ERROR:DISJOINT_ROLE:" + string
+                              ($3) + ":" + std::to_string(getLineNo());
+                              Logger::log("Warning: 'role' generalization cannot be disjoint");
+                              errorType = 3;
+                              yyerror(msg.c_str());
+                        }
+                  }
+            }
+            
+            // if string($1) is not disjoint and generalPatterns has "phase", it's a semantic error, as phase must be disjoint
+            if (string($1) != "disjoint") {
+                  for (const auto& pattern : generalPatterns) {
+                        if (pattern.find("phase") != string::npos) {
+                              std::string msg = "SEMANTIC_ERROR:PHASE_NOT_DISJOINT:" + string
+                              ($3) + ":" + std::to_string(getLineNo());
+                              Logger::log("Warning: 'phase' generalization must be disjoint");
+                              errorType = 3;
+                              yyerror(msg.c_str());
+                        }
+                  }
+            }
       }
       | GENSETS CONVENCAO_IDENTIFICADOR RESERVADAS generalizacao_itens ESTEREOTIPO_RELACOES CONVENCAO_IDENTIFICADOR { symbolTable.addConstruct($2, "Generalizacao"); Logger::log("Reduced: generalizacoes (without reservadas)"); }
       | GENSETS CONVENCAO_IDENTIFICADOR RESERVADAS generalizacao_itens ESTEREOTIPO_RELACOES CONVENCAO_IDENTIFICADOR { symbolTable.addConstruct($2, "Generalizacao"); Logger::log("Reduced: generalizacoes"); }
 
 reservadas_genset:
-      | RESERVADAS { Logger::log("Reduced: reservadas_genset"); }
-      | RESERVADAS reservadas_genset { Logger::log("Reduced: reservadas_genset (multiple)"); }
+      | RESERVADAS { 
+            Logger::log("Reduced: reservadas_genset"); 
+            if (string($1) == "disjoint") {
+                  $$ = $1;
+            }
+      }
+      | RESERVADAS reservadas_genset { 
+            Logger::log("Reduced: reservadas_genset (multiple)");
+            if (string($1) == "disjoint") {
+                  $$ = $1;
+            }
+      }
 
 generalizacao_itens:
       | CONVENCAO_IDENTIFICADOR { 
@@ -381,6 +418,26 @@ void yyerror(const char *s) {
             msg = "Semantic Error on line " + lineStr + ":\n";
             msg += "  The identifier '" + lexeme + "' was not declared before use.\n";
             msg += "  Hint: Declare '" + lexeme + "' with a class stereotype (e.g., 'kind " + lexeme + "') before using it.";
+      } else if (errorMsg.find("SEMANTIC_ERROR:DISJOINT_ROLE:") == 0) {
+            std::string remainder = errorMsg.substr(26); 
+            size_t lastColon = remainder.rfind(':'); 
+            
+            std::string lexeme = remainder.substr(0, lastColon);
+            std::string lineStr = remainder.substr(lastColon + 1);
+            
+            msg = "Semantic Error on line " + lineStr + ":\n";
+            msg += "  The generalization '" + lexeme + "' cannot be disjoint because it involves a 'role' construct.\n";
+            msg += "  Hint: Change the generalization to non-disjoint or remove the 'role' construct.";
+      } else if (errorMsg.find("SEMANTIC_ERROR:PHASE_NOT_DISJOINT:") == 0) {
+            std::string remainder = errorMsg.substr(30); 
+            size_t lastColon = remainder.rfind(':'); 
+            
+            std::string lexeme = remainder.substr(0, lastColon);
+            std::string lineStr = remainder.substr(lastColon + 1);
+            
+            msg = "Semantic Error on line " + lineStr + ":\n";
+            msg += "  The generalization '" + lexeme + "' must be disjoint because it involves a 'phase' construct.\n";
+            msg += "  Hint: Change the generalization to disjoint.";
       } else {
             std::string expected = "";
             size_t expectingPos = errorMsg.find("expecting");
