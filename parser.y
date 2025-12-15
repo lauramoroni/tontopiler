@@ -3,8 +3,13 @@
 #include "Logger.h"
 #include "SymbolTable.h"
 #include <cstring>
+#include <string>
+#include <iostream>
 
 extern SymbolTable symbolTable;
+extern int getLineNo();
+extern std::string getSyntaxErrorMsg(); 
+
 int yylex(void);
 int yyparse(void);
 void yyerror(const char *s);
@@ -43,6 +48,7 @@ extern int errorType;
 %type <list> relacao_classe_itens
 %type <list> enum_itens
 %type <list> relacoes_escopo
+%type <list> generalizacao_itens
 
 
 %%
@@ -69,6 +75,10 @@ element:
 classe:
       | ESTEREOTIPO_CLASSES CONVENCAO_IDENTIFICADOR { symbolTable.addConstruct($2, $1); Logger::log("Reduced: classe (simple)"); }
       | ESTEREOTIPO_CLASSES CONVENCAO_IDENTIFICADOR '{' atributos '}' { symbolTable.addConstruct($2, $1); Logger::log("Reduced: classe (with attributes)"); }
+      | ESTEREOTIPO_CLASSES CONVENCAO_IDENTIFICADOR '{' error '}' { 
+            Logger::log("Recuperado de erro dentro da classe."); 
+            yyerrok; 
+      }
 
 atributos:
       | atributo
@@ -94,14 +104,43 @@ relacao_classe:
 
 relacao_classe_itens:
       | CONVENCAO_IDENTIFICADOR { 
-          $$ = new std::vector<std::string>();
-          $$->push_back($1);
-          Logger::log("Reduced: relacao_classe_itens (single)"); 
+            Symbol* symbol = symbolTable.lookup($1);
+
+            int currentUseLine = symbol ? symbol->positions.back().first : 0;
+            
+            Logger::log("Symbol '" + std::string($1) + "' construct: " + (symbol ? symbol->construct : "(not found)"));
+            Logger::log("Symbol '" + std::string($1) + "' current use line: " + std::to_string(currentUseLine));
+            
+            if (!symbol || symbol->construct.empty()) {
+                  std::string msg = "SEMANTIC_ERROR:UNDECLARED:" + std::string($1) + ":" + std::to_string(currentUseLine);
+                  Logger::log("Warning: Identifier '" + std::string($1) + "' not declared before use");
+                  errorType = 3;
+                  yyerror(msg.c_str());
+        
+                  $$ = new std::vector<std::string>();
+            } else {
+                  $$ = new std::vector<std::string>();
+                  $$->push_back($1);
+                  Logger::log("Reduced: relacao_classe_itens (single)");
+            }    
       }
       | CONVENCAO_IDENTIFICADOR ',' relacao_classe_itens { 
-          $$ = $3;
-          $$->insert($$->begin(), $1);
-          Logger::log("Reduced: relacao_classe_itens (multiple)"); 
+            Symbol* symbol = symbolTable.lookup($1);
+
+            int currentUseLine = symbol ? symbol->positions.back().first : 0;
+
+            if (!symbol || symbol->construct.empty()) {
+                  std::string msg = "SEMANTIC_ERROR:UNDECLARED:" + std::string($1) + ":" + std::to_string(currentUseLine);
+                  Logger::log("Warning: Identifier '" + std::string($1) + "' not declared before use");
+                  errorType = 3;
+                  yyerror(msg.c_str());
+
+                  $$ = $3;
+            } else {
+                  $$ = $3;
+                  $$->insert($$->begin(), $1);
+                  Logger::log("Reduced: relacao_classe_itens (multiple)");
+            }
       }
 
 data_types: 
@@ -112,7 +151,7 @@ enumerations:
       | ENUM CONVENCAO_IDENTIFICADOR '{' enum_itens '}' { 
             symbolTable.addConstruct($2, "Enumeration"); 
             for (const auto& item : *$4) {
-                symbolTable.addRelationship($2, (string("enum:") + item).c_str());
+                symbolTable.addRelationship($2, (std::string("enum:") + item).c_str());
             }
             delete $4;
             Logger::log("Reduced: enumerations"); 
@@ -142,7 +181,26 @@ reservadas_genset:
       | RESERVADAS reservadas_genset { Logger::log("Reduced: reservadas_genset (multiple)"); }
 
 generalizacao_itens:
-      | CONVENCAO_IDENTIFICADOR { Logger::log("Reduced: generalizacao_itens (single)"); }
+      | CONVENCAO_IDENTIFICADOR { 
+            Symbol* symbol = symbolTable.lookup($1);
+            
+            int currentUseLine = symbol ? symbol->positions.back().first : 0;
+            
+            Logger::log("Symbol '" + std::string($1) + "' construct: " + (symbol ? symbol->construct : "(not found)"));
+            
+            if (!symbol || symbol->construct.empty()) {
+                  std::string msg = "SEMANTIC_ERROR:UNDECLARED:" + std::string($1) + ":" + std::to_string(currentUseLine);
+                  Logger::log("Warning: Identifier '" + std::string($1) + "' not declared before use");
+                  errorType = 3;
+                  yyerror(msg.c_str());
+        
+                  $$ = new std::vector<std::string>();
+            } else {
+                  $$ = new std::vector<std::string>();
+                  $$->push_back($1);
+            }
+            Logger::log("Reduced: generalizacao_itens (single)"); 
+      }
       | CONVENCAO_IDENTIFICADOR ',' generalizacao_itens { Logger::log("Reduced: generalizacao_itens (multiple)"); }
 
 generalizacao_escopo:
@@ -160,13 +218,13 @@ declaracao_relacoes:
       }
       | '@' ESTEREOTIPO_RELACOES RESERVADAS CONVENCAO_IDENTIFICADOR cardinalidade operador_relacao cardinalidade CONVENCAO_IDENTIFICADOR { 
             symbolTable.addConstruct($4, "Relacao"); 
-            std::string rel = string($2) + ":" + string($8);
+            std::string rel = std::string($2) + ":" + std::string($8);
             symbolTable.addRelationship($4, rel.c_str());
             Logger::log("Reduced: declaracao_relacoes (with reservadas)"); 
       }
       | '@' ESTEREOTIPO_RELACOES RESERVADAS CONVENCAO_IDENTIFICADOR cardinalidade operador_relacao CONVENCAO_RELACOES operador_relacao cardinalidade CONVENCAO_IDENTIFICADOR { 
             symbolTable.addConstruct($4, "Relacao"); 
-            std::string rel = string($2) + ":" + string($10);
+            std::string rel = std::string($2) + ":" + std::string($10);
             symbolTable.addRelationship($4, rel.c_str());
             Logger::log("Reduced: declaracao_relacoes (with reservadas)"); 
       }
@@ -174,35 +232,34 @@ declaracao_relacoes:
 relacoes_escopo:
       | '@' ESTEREOTIPO_RELACOES cardinalidade operador_relacao cardinalidade CONVENCAO_IDENTIFICADOR { 
             $$ = new std::vector<std::string>();
-            $$->push_back(string($2) + ":" + $6);
+            $$->push_back(std::string($2) + ":" + $6);
             Logger::log("Reduced: relacao_item (stereotyped)"); 
       }
       | operador_relacao CONVENCAO_RELACOES operador_relacao cardinalidade CONVENCAO_IDENTIFICADOR { 
             $$ = new std::vector<std::string>();
-            $$->push_back(string($2) + ":" + $5);
+            $$->push_back(std::string($2) + ":" + $5);
             Logger::log("Reduced: relacao_item (simple)"); 
       }
       | '@' ESTEREOTIPO_RELACOES operador_relacao CONVENCAO_RELACOES operador_relacao cardinalidade CONVENCAO_IDENTIFICADOR { 
             Logger::log("Reducao para criacao do vetor"); 
             $$ = new std::vector<std::string>();
-            $$->push_back(string($2) + ":" + $7);
+            $$->push_back(std::string($2) + ":" + $7);
             Logger::log("Reduced: relacao_item (stereotyped simple)"); 
       }
-      
       | '@' ESTEREOTIPO_RELACOES cardinalidade operador_relacao cardinalidade CONVENCAO_IDENTIFICADOR ',' relacoes_escopo { 
             $$ = $8;
-            $$->insert($$->begin(), string($2) + ":" + $6);
+            $$->insert($$->begin(), std::string($2) + ":" + $6);
             Logger::log("Reduced: relacao_item (stereotyped)"); 
       }
       | operador_relacao CONVENCAO_RELACOES operador_relacao cardinalidade CONVENCAO_IDENTIFICADOR ',' relacoes_escopo { 
             $$ = $7;
-            $$->insert($$->begin(), string($2) + ":" + $5);
+            $$->insert($$->begin(), std::string($2) + ":" + $5);
             Logger::log("Reduced: relacao_item (simple)"); 
       }
       | '@' ESTEREOTIPO_RELACOES operador_relacao CONVENCAO_RELACOES operador_relacao cardinalidade CONVENCAO_IDENTIFICADOR ',' relacoes_escopo { 
             Logger::log("Reducao pos criacao do vetor"); 
             $$ = $9;
-            $$->insert($$->begin(), string($2) + ":" + $7);
+            $$->insert($$->begin(), std::string($2) + ":" + $7);
             Logger::log("Reduced: relacao_item (stereotyped simple)"); 
       }
 
@@ -221,29 +278,46 @@ operador_relacao:
 
 void yyerror(const char *s) {
       Logger::log("Parse error: " + std::string(s));
-      // fprintf(stderr, "Parse error: %s\n", s);
 
       if (errorType == 0) {
             errorType = 2;
       }
 
       std::string errorMsg = s;
-      std::string expected = "";
-      size_t expectingPos = errorMsg.find("expecting");
-      if (expectingPos != std::string::npos) {
-          expected = errorMsg.substr(expectingPos + 10);
+      std::string msg;
+
+      if (errorMsg.find("SEMANTIC_ERROR:UNDECLARED:") == 0) {
+            std::string remainder = errorMsg.substr(26); 
+            size_t lastColon = remainder.rfind(':'); 
+            
+            std::string lexeme = remainder.substr(0, lastColon);
+            std::string lineStr = remainder.substr(lastColon + 1);
+            
+            msg = "Semantic Error on line " + lineStr + ":\n";
+            msg += "  The identifier '" + lexeme + "' was not declared before use.\n";
+            msg += "  Hint: Declare '" + lexeme + "' with a class stereotype (e.g., 'kind " + lexeme + "') before using it.";
+      } else {
+            std::string expected = "";
+            size_t expectingPos = errorMsg.find("expecting");
+            if (expectingPos != std::string::npos) {
+                expected = errorMsg.substr(expectingPos + 10);
+            }
+
+            msg = "Error on line " + std::to_string(getLineNo()) + ", lexeme '" + getCurrentLexeme() + "' (" + getCurrentTokenString() + ").";
+            if (!expected.empty()) {
+                msg += "\nExpecting a token " + expected + ".";
+            }
       }
 
-      std::string msg = "Error on line " + std::to_string(getLineNo()) + ", lexeme '" + getCurrentLexeme() + "' (" + getCurrentTokenString() + ").";
-      if (!expected.empty()) {
-          msg += "\nExpecting a token " + expected + ".";
+      std::string currentErrors = getSyntaxErrorMsg();
+      if (!currentErrors.empty()) {
+            setSyntaxErrorMsg(currentErrors + "\n\n" + msg);
+      } else {
+            setSyntaxErrorMsg(msg);
       }
-
-      setSyntaxErrorMsg(msg);
 }
 
 int main() {
    startTUI();
-
    return 0;
 }

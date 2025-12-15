@@ -35,6 +35,7 @@ extern int yyparse();
 static yyFlexLexer* globalLexer = nullptr;
 static std::string g_currentLexeme = "";
 static std::string g_currentTokenString = "";
+static int g_currentLine = 0;
 
 // The bridge function called by the parser
 int yylex() {
@@ -43,7 +44,9 @@ int yylex() {
         string text = globalLexer->YYText();
         g_currentLexeme = text;
         g_currentTokenString = tokenToString(token);
-        Logger::log("Lexer: " + string(tokenToString(token)) + " (" + text + ")");
+        // Salvar a linha ATUAL do token reconhecido, antes do parser pedir o próximo
+        g_currentLine = globalLexer->lineno();
+        Logger::log("Lexer: " + string(tokenToString(token)) + " (" + text + ") at line " + to_string(g_currentLine));
         return token;
     }
     return 0;
@@ -54,10 +57,7 @@ int yylex() {
 static std::string g_syntaxErrorMsg = "";
 
 int getLineNo() {
-    if (globalLexer) {
-        return globalLexer->lineno();
-    }
-    return 0;
+    return g_currentLine;
 }
 
 void setSyntaxErrorMsg(const std::string& msg) {
@@ -364,6 +364,10 @@ void runLexer(const char* filePath) {
         statusColor = 12; // Red
         if (errorType == 1) {
             statusLine = "Status: Lexical Error";
+            detailMsg = getSyntaxErrorMsg();
+        } else if (errorType == 3) {
+            statusLine = "Status: Semantic Error - Undeclared Identifier";
+            detailMsg = getSyntaxErrorMsg();
         } else {
             statusLine = "Status: Syntax Error";
             detailMsg = getSyntaxErrorMsg();
