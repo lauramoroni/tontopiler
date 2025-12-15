@@ -48,7 +48,8 @@ extern int errorType;
 %type <list> relacao_classe_itens
 %type <list> enum_itens
 %type <list> relacoes_escopo
-%type <list> generalizacao_itens
+%type <str> generalizacao_itens
+%type <str> generalizacao_escopo
 
 
 %%
@@ -73,8 +74,20 @@ element:
       | declaracao_relacoes { Logger::log("Reduced: element -> declaracao_relacoes"); }
 
 classe:
-      | ESTEREOTIPO_CLASSES CONVENCAO_IDENTIFICADOR { symbolTable.addConstruct($2, $1); Logger::log("Reduced: classe (simple)"); }
-      | ESTEREOTIPO_CLASSES CONVENCAO_IDENTIFICADOR '{' atributos '}' { symbolTable.addConstruct($2, $1); Logger::log("Reduced: classe (with attributes)"); }
+      | ESTEREOTIPO_CLASSES CONVENCAO_IDENTIFICADOR { 
+            symbolTable.addConstruct($2, $1); Logger::log("Reduced: classe (simple)"); 
+
+            if (string($1) == "roleMixin") {
+                  symbolTable.addSemanticPattern($2, "roleMixin");
+            }
+      }
+      | ESTEREOTIPO_CLASSES CONVENCAO_IDENTIFICADOR '{' atributos '}' { 
+            symbolTable.addConstruct($2, $1); Logger::log("Reduced: classe (with attributes)"); 
+
+            if (string($1) == "roleMixin") {
+                  symbolTable.addSemanticPattern($2, "roleMixin");
+            }
+      }
       | ESTEREOTIPO_CLASSES CONVENCAO_IDENTIFICADOR '{' error '}' { 
             Logger::log("Recuperado de erro dentro da classe."); 
             yyerrok; 
@@ -94,12 +107,16 @@ atributo:
 
 relacao_classe:
       | ESTEREOTIPO_CLASSES CONVENCAO_IDENTIFICADOR ESTEREOTIPO_RELACOES relacao_classe_itens { 
-          symbolTable.addConstruct($2, "RelacaoClasse");
-          for (const auto& rel : *$4) {
+            symbolTable.addConstruct($2, $1);
+
+            for (const auto& rel : *$4) {
                   symbolTable.addRelationship($2, (string($3) + string(":") + rel).c_str());
-          }
-          delete $4;
-          Logger::log("Reduced: relacao_classe"); 
+
+                  symbolTable.addSemanticPattern(rel.c_str(), (string($1) + string(":") + string($2)).c_str());
+            }
+
+            delete $4;
+            Logger::log("Reduced: relacao_classe"); 
       }
 
 relacao_classe_itens:
@@ -171,8 +188,13 @@ enum_itens:
 
 
 generalizacoes:
-      | reservadas_genset GENSETS CONVENCAO_IDENTIFICADOR RESERVADAS generalizacao_itens ESTEREOTIPO_RELACOES CONVENCAO_IDENTIFICADOR { symbolTable.addConstruct($3, "Generalizacao"); Logger::log("Reduced: generalizacoes (with reservadas)"); }
-      | reservadas_genset GENSETS CONVENCAO_IDENTIFICADOR '{' generalizacao_escopo '}' { symbolTable.addConstruct($3, "Generalizacao"); Logger::log("Reduced: generalizacoes (without reservadas)"); }
+      | reservadas_genset GENSETS CONVENCAO_IDENTIFICADOR RESERVADAS generalizacao_itens ESTEREOTIPO_RELACOES CONVENCAO_IDENTIFICADOR { 
+            symbolTable.addConstruct($3, "Generalizacao"); 
+            Logger::log("Reduced: generalizacoes (with reservadas)");
+      }
+      | reservadas_genset GENSETS CONVENCAO_IDENTIFICADOR '{' generalizacao_escopo '}' { 
+            symbolTable.addConstruct($3, "Generalizacao"); Logger::log("Reduced: generalizacoes (without reservadas)");
+      }
       | GENSETS CONVENCAO_IDENTIFICADOR RESERVADAS generalizacao_itens ESTEREOTIPO_RELACOES CONVENCAO_IDENTIFICADOR { symbolTable.addConstruct($2, "Generalizacao"); Logger::log("Reduced: generalizacoes (without reservadas)"); }
       | GENSETS CONVENCAO_IDENTIFICADOR RESERVADAS generalizacao_itens ESTEREOTIPO_RELACOES CONVENCAO_IDENTIFICADOR { symbolTable.addConstruct($2, "Generalizacao"); Logger::log("Reduced: generalizacoes"); }
 
@@ -193,28 +215,37 @@ generalizacao_itens:
                   Logger::log("Warning: Identifier '" + std::string($1) + "' not declared before use");
                   errorType = 3;
                   yyerror(msg.c_str());
-        
-                  $$ = new std::vector<std::string>();
-            } else {
-                  $$ = new std::vector<std::string>();
-                  $$->push_back($1);
             }
-            Logger::log("Reduced: generalizacao_itens (single)"); 
+
+            Logger::log("Reduced: generalizacao_itens (single)");
+
+            // Return the last lexeme
+            $$ = $1;
       }
-      | CONVENCAO_IDENTIFICADOR ',' generalizacao_itens { Logger::log("Reduced: generalizacao_itens (multiple)"); }
+      | CONVENCAO_IDENTIFICADOR ',' generalizacao_itens { 
+            Logger::log("Reduced: generalizacao_itens (multiple)"); 
+            $$ = $3;      
+      }
 
 generalizacao_escopo:
       | RESERVADAS generalizacao_itens { Logger::log("Reduced: generalizacao_escopo (single)"); }
-      | RESERVADAS generalizacao_itens generalizacao_escopo { Logger::log("Reduced: generalizacao_escopo (multiple)"); }
+      | RESERVADAS generalizacao_itens generalizacao_escopo {
+            Logger::log("Reduced: generalizacao_escopo (multiple)"); 
+            if (string($1) == "general") {
+                  $$ = $2;
+            }
+      }
 
 
 declaracao_relacoes:
       | ESTEREOTIPO_CLASSES CONVENCAO_IDENTIFICADOR '{' relacoes_escopo '}' { 
-            symbolTable.addConstruct($2, $1);
+            symbolTable.addConstruct($2, "Relacao");
+            symbolTable.addSemanticPattern($2, $1);
             for (const auto& rel : *$4) {
                   symbolTable.addRelationship($2, rel.c_str());
             }
             Logger::log("Reduced: declaracao_relacoes"); 
+
       }
       | '@' ESTEREOTIPO_RELACOES RESERVADAS CONVENCAO_IDENTIFICADOR cardinalidade operador_relacao cardinalidade CONVENCAO_IDENTIFICADOR { 
             symbolTable.addConstruct($4, "Relacao"); 

@@ -44,9 +44,18 @@ void SymbolTable::addConstruct(const char* lexeme, const char* construct) {
 
 void SymbolTable::addRelationship(const char* lexeme, const char* relatedLexeme) {
    Logger::log("Adding relationship from " + string(lexeme) + " to " + string(relatedLexeme));
+
    Symbol* symbol = lookup(lexeme);
    if (symbol) {
       symbol->relationships.push_back(string(relatedLexeme));
+   }
+}
+
+void SymbolTable::addSemanticPattern(const char* lexeme, const char* semanticPattern) {
+   Logger::log("Adding semantic pattern " + string(semanticPattern) + " to symbol " + string(lexeme));
+   Symbol* symbol = lookup(lexeme);
+   if (symbol) {
+      symbol->semanticPatterns.push_back(string(semanticPattern));
    }
 }
 
@@ -59,7 +68,7 @@ void SymbolTable::toTSV(const char* filename) {
       return;
    }
 
-   fprintf(file, "Lexeme\tToken\tOccurrences\tPositions (line, column)\tConstruct\tRelationships\n");
+   fprintf(file, "Lexeme\tToken\tOccurrences\tPositions (line, column)\tConstruct\tRelationships\tSemantic Patterns\n");
 
    for (const auto& pair : symbolMap) {
       const char* token_string = tokenToString(pair.second.token);
@@ -77,6 +86,15 @@ void SymbolTable::toTSV(const char* filename) {
       for (size_t i = 0; i < pair.second.relationships.size(); ++i) {
          fprintf(file, "%s", pair.second.relationships[i].c_str());
          if (i < pair.second.relationships.size() - 1) {
+             fprintf(file, ", ");
+         }
+      }
+
+      fprintf(file, "\t");
+
+      for (size_t i = 0; i < pair.second.semanticPatterns.size(); ++i) {
+         fprintf(file, "%s", pair.second.semanticPatterns[i].c_str());
+         if (i < pair.second.semanticPatterns.size() - 1) {
              fprintf(file, ", ");
          }
       }
@@ -110,12 +128,13 @@ vector<ConstructStats> SymbolTable::getConstructStats() {
       std::pair<int, string> key = {sym.token, sym.construct};
 
       if (statsMap.find(key) == statsMap.end()) {
-         statsMap[key] = {sym.token, sym.construct, 0, 0, 0};
+         statsMap[key] = {sym.token, sym.construct, 0, 0, 0, 0};
       }
 
       statsMap[key].uniqueSymbols++;
       statsMap[key].totalOccurrences += sym.occurrences;
       statsMap[key].totalRelationships += sym.relationships.size();
+      statsMap[key].totalSemanticPatterns += sym.semanticPatterns.size();
    }
 
    vector<ConstructStats> result;
@@ -123,4 +142,26 @@ vector<ConstructStats> SymbolTable::getConstructStats() {
       result.push_back(pair.second);
    }
    return result;
+}
+
+
+string SymbolTable::getConstructForLexeme(const char* lexeme) {
+   Symbol* symbol = lookup(lexeme);
+   
+   if (symbol) {
+      return symbol->construct;
+   }
+
+   return "";
+}
+
+
+vector<string> SymbolTable::getSemanticPatternsForLexeme(const char* lexeme) {
+   Symbol* symbol = lookup(lexeme);
+   
+   if (symbol) {
+      return symbol->semanticPatterns;
+   }
+
+   return {};
 }

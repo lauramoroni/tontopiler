@@ -626,8 +626,8 @@ void constructCounter(WINDOW* parent_win) {
     vector<ConstructStats> stats = symbolTable.getConstructStats();
     int y = 3;
     
-    mvwprintw(win, y++, 2, "%-30s | %-20s | %-10s | %-12s | %-10s", "Token", "Construct", "Diff Count", "Occurrences", "Rel Count");
-    mvwprintw(win, y++, 2, "--------------------------------------------------------------------------------------");
+    mvwprintw(win, y++, 2, "%-30s | %-20s | %-10s | %-12s | %-10s | %-10s", "Token", "Construct", "Diff Count", "Occurrences", "Rel Count", "Pat Count");
+    mvwprintw(win, y++, 2, "-----------------------------------------------------------------------------------------------------------------");
 
     for (const auto& stat : stats) {
         if (y >= LINES - 2) {
@@ -638,15 +638,16 @@ void constructCounter(WINDOW* parent_win) {
              box(win, 0, 0);
              mvwprintw(win, 1, 2, "--- Construct Counter (Page 2) ---");
              y = 3;
-             mvwprintw(win, y++, 2, "%-30s | %-20s | %-10s | %-12s | %-10s", "Token", "Construct", "Diff Count", "Occurrences", "Rel Count");
-             mvwprintw(win, y++, 2, "--------------------------------------------------------------------------------------");
+             mvwprintw(win, y++, 2, "%-30s | %-20s | %-10s | %-12s | %-10s | %-10s", "Token", "Construct", "Diff Count", "Occurrences", "Rel Count", "Pat Count");
+             mvwprintw(win, y++, 2, "-----------------------------------------------------------------------------------------------------------------");
         }
-        mvwprintw(win, y++, 2, "%-30s | %-20s | %-10d | %-12d | %-10d", 
+        mvwprintw(win, y++, 2, "%-30s | %-20s | %-10d | %-12d | %-10d | %-10d", 
             tokenToString(stat.tokenType), 
             stat.construct.c_str(), 
             stat.uniqueSymbols, 
             stat.totalOccurrences, 
-            stat.totalRelationships);
+            stat.totalRelationships,
+            stat.totalSemanticPatterns);
     }
 
     mvwprintw(win, LINES - 2, 2, "Press any key to return to the menu...");
@@ -714,6 +715,15 @@ void consultLexeme(WINDOW* parent_win) {
         }
         mvwprintw(win, 8, 2, "%s", rels.c_str());
 
+        string patterns = "Semantic Patterns: ";
+        for (size_t i = 0; i < symbol->semanticPatterns.size(); ++i) {
+            patterns += symbol->semanticPatterns[i];
+            if (i < symbol->semanticPatterns.size() - 1) {
+                patterns += ", ";
+            }
+        }
+        mvwprintw(win, 9, 2, "%s", patterns.c_str());
+
     } else {
         mvwprintw(win, 3, 2, "Lexeme '%s' not found.", lexeme_str);
     }
@@ -755,6 +765,7 @@ void showTable(WINDOW* parent_win) {
         init_pair(4, COLOR_GREEN, COLOR_BLACK); // Line Numbers
         init_pair(5, COLOR_MAGENTA, COLOR_BLACK);
         init_pair(6, COLOR_BLUE, COLOR_BLACK);
+        init_pair(7, COLOR_RED, COLOR_BLACK);
     }
 
     ifstream tsv_file("symbol_table.tsv");
@@ -926,7 +937,7 @@ void showTable(WINDOW* parent_win) {
                     }
 
                     if (use_colors) {
-                        int pair = (j % 6) + 1;
+                        int pair = (j % 7) + 1;
                         wattron(win, COLOR_PAIR(pair));
                         if (highlight) wattron(win, A_REVERSE);
                         mvwprintw(win, yline + sub, x, "%s", cellPart.c_str());

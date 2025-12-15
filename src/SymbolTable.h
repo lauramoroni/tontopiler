@@ -17,7 +17,7 @@ struct Symbol
    int occurrences;
    vector<pair<int, int>> positions;
    string construct;
-   string semanticPattern;
+   vector<string> semanticPatterns;
    vector<string> relationships;
 };
 
@@ -27,6 +27,7 @@ struct ConstructStats {
    int uniqueSymbols;
    int totalOccurrences;
    int totalRelationships;
+   int totalSemanticPatterns;
 };
 
 
@@ -43,11 +44,14 @@ public:
 
    void addConstruct(const char* lexeme, const char* construct);
    void addRelationship(const char* lexeme, const char* relatedLexeme);
+   void addSemanticPattern(const char* lexeme, const char* semanticPattern);
 
    void toTSV(const char* filename);
 
    map<int, int> getUniqueConstructCounts();
    vector<ConstructStats> getConstructStats();
+   string getConstructForLexeme(const char* lexeme);
+   vector<string> getSemanticPatternsForLexeme(const char* lexeme);
 };
 
 #endif

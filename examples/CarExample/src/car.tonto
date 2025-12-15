@@ -8,7 +8,7 @@ kind Car
 
 kind Person
 
-role Teste
+roleMixin Teste
 
 role Employee specializes Person, Car, Organization
 

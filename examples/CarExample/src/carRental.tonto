@@ -39,10 +39,7 @@ role RentalCar specializes AvailableCar
 
 relator CarRental {
     @mediation
-    -- involvesRental -- [1] RentalCar
+    -- involvesRental -- [1] RentalCar,
     
-    -- involvesMediator -- [1] ResponsibleEmployee
-    
-    @mediation
-    -- involvesCustomer --[1] Customer
+    -- involvesMediator -- [1] ResponsibleEmployee 
 }
