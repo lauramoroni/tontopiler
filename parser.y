@@ -231,32 +231,86 @@ declaracao_relacoes:
 
 relacoes_escopo:
       | '@' ESTEREOTIPO_RELACOES cardinalidade operador_relacao cardinalidade CONVENCAO_IDENTIFICADOR { 
+            Symbol* symbol = symbolTable.lookup($6);
+            int currentUseLine = symbol ? symbol->positions.back().first : getLineNo();
+            
+            if (!symbol || symbol->construct.empty()) {
+                  std::string msg = "SEMANTIC_ERROR:UNDECLARED:" + std::string($6) + ":" + std::to_string(currentUseLine);
+                  Logger::log("Warning: Identifier '" + std::string($6) + "' not declared before use");
+                  errorType = 3;
+                  yyerror(msg.c_str());
+            }
             $$ = new std::vector<std::string>();
             $$->push_back(std::string($2) + ":" + $6);
             Logger::log("Reduced: relacao_item (stereotyped)"); 
       }
       | operador_relacao CONVENCAO_RELACOES operador_relacao cardinalidade CONVENCAO_IDENTIFICADOR { 
+            Symbol* symbol = symbolTable.lookup($5);
+            int currentUseLine = symbol ? symbol->positions.back().first : getLineNo();
+            
+            if (!symbol || symbol->construct.empty()) {
+                  std::string msg = "SEMANTIC_ERROR:UNDECLARED:" + std::string($5) + ":" + std::to_string(currentUseLine);
+                  Logger::log("Warning: Identifier '" + std::string($5) + "' not declared before use");
+                  errorType = 3;
+                  yyerror(msg.c_str());
+            }
             $$ = new std::vector<std::string>();
             $$->push_back(std::string($2) + ":" + $5);
             Logger::log("Reduced: relacao_item (simple)"); 
       }
       | '@' ESTEREOTIPO_RELACOES operador_relacao CONVENCAO_RELACOES operador_relacao cardinalidade CONVENCAO_IDENTIFICADOR { 
+            Symbol* symbol = symbolTable.lookup($7);
+            int currentUseLine = symbol ? symbol->positions.back().first : getLineNo();
+            
+            if (!symbol || symbol->construct.empty()) {
+                  std::string msg = "SEMANTIC_ERROR:UNDECLARED:" + std::string($7) + ":" + std::to_string(currentUseLine);
+                  Logger::log("Warning: Identifier '" + std::string($7) + "' not declared before use");
+                  errorType = 3;
+                  yyerror(msg.c_str());
+            }
             Logger::log("Reducao para criacao do vetor"); 
             $$ = new std::vector<std::string>();
             $$->push_back(std::string($2) + ":" + $7);
             Logger::log("Reduced: relacao_item (stereotyped simple)"); 
       }
       | '@' ESTEREOTIPO_RELACOES cardinalidade operador_relacao cardinalidade CONVENCAO_IDENTIFICADOR ',' relacoes_escopo { 
+            Symbol* symbol = symbolTable.lookup($6);
+            int currentUseLine = symbol ? symbol->positions.back().first : getLineNo();
+            
+            if (!symbol || symbol->construct.empty()) {
+                  std::string msg = "SEMANTIC_ERROR:UNDECLARED:" + std::string($6) + ":" + std::to_string(currentUseLine);
+                  Logger::log("Warning: Identifier '" + std::string($6) + "' not declared before use");
+                  errorType = 3;
+                  yyerror(msg.c_str());
+            }
             $$ = $8;
             $$->insert($$->begin(), std::string($2) + ":" + $6);
             Logger::log("Reduced: relacao_item (stereotyped)"); 
       }
       | operador_relacao CONVENCAO_RELACOES operador_relacao cardinalidade CONVENCAO_IDENTIFICADOR ',' relacoes_escopo { 
+            Symbol* symbol = symbolTable.lookup($5);
+            int currentUseLine = symbol ? symbol->positions.back().first : getLineNo();
+            
+            if (!symbol || symbol->construct.empty()) {
+                  std::string msg = "SEMANTIC_ERROR:UNDECLARED:" + std::string($5) + ":" + std::to_string(currentUseLine);
+                  Logger::log("Warning: Identifier '" + std::string($5) + "' not declared before use");
+                  errorType = 3;
+                  yyerror(msg.c_str());
+            }
             $$ = $7;
             $$->insert($$->begin(), std::string($2) + ":" + $5);
             Logger::log("Reduced: relacao_item (simple)"); 
       }
       | '@' ESTEREOTIPO_RELACOES operador_relacao CONVENCAO_RELACOES operador_relacao cardinalidade CONVENCAO_IDENTIFICADOR ',' relacoes_escopo { 
+            Symbol* symbol = symbolTable.lookup($7);
+            int currentUseLine = symbol ? symbol->positions.back().first : getLineNo();
+            
+            if (!symbol || symbol->construct.empty()) {
+                  std::string msg = "SEMANTIC_ERROR:UNDECLARED:" + std::string($7) + ":" + std::to_string(currentUseLine);
+                  Logger::log("Warning: Identifier '" + std::string($7) + "' not declared before use");
+                  errorType = 3;
+                  yyerror(msg.c_str());
+            }
             Logger::log("Reducao pos criacao do vetor"); 
             $$ = $9;
             $$->insert($$->begin(), std::string($2) + ":" + $7);
