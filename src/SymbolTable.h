@@ -17,6 +17,7 @@ struct Symbol
    int occurrences;
    vector<pair<int, int>> positions;
    string construct;
+   string semanticPattern;
    vector<string> relationships;
 };
 
