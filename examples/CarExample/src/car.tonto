@@ -4,17 +4,11 @@ kind Organization
 subkind CarAgency specializes Organization
 kind Car
 
-
-
 kind Person
-
-roleMixin Teste
 
 role Employee specializes Person, Car, Organization
 
 enum EyeColor { Blue, Green, Brown, Black }
-
-
 
 relator CarOwnership {
     @mediation

@@ -27,6 +27,7 @@ A linguagem Tonto foi proposta para simplificar a modelagem de ontologias, permi
 O Tontopiler realiza a análise léxica e sintática de uma ontologia especificada em Tonto. O analisador oferece:
 
   * **Verificação Sintática:** Valida se a estrutura do código segue a gramática da linguagem Tonto.
+  * **Análise Semântica:** Valida padrões de projeto de ontologias (ODPs) e regras de contexto.
   * **Relatório de Erros:** Indica erros léxicos e sintáticos, apontando a linha e o token esperado.
   * **Visão analítica:** Exibe todos os tokens reconhecidos e suas propriedades.
   * **Tabela de síntese:** Apresenta um resumo quantitativo dos elementos da linguagem (Contador de Construtos).
@@ -151,6 +152,7 @@ Exibe a tabela de símbolos completa gerada a partir da análise. O arquivo `sym
 - Positions: As coordenadas (linha, coluna).
 - Construct: O tipo de construto gramatical (se aplicável).
 - Relationships: Relações identificadas.
+- Semantic Patterns: Padrões semânticos associados.
 
 ![Symbol Table TSV](docs/symbol_table_tsv.gif)
 
@@ -212,6 +214,23 @@ As regras gramaticais da linguagem Tonto foram definidas no arquivo `parser.y`. 
 - **Tipos de Dados e Enumerações**: Definições de novos tipos (`datatype`) e listas de valores permitidos (`enum`).
 
 O analisador trata erros sintáticos informando a linha e o lexema onde a falha ocorreu, e quando possível, o token que era esperado.
+
+# Análise Semântica
+
+## O que é a Análise Semântica?
+A análise semântica é a fase do processo de compilação que valida as estruturas de código em função de seu contexto. Diferente da análise sintática, que verifica a forma, a análise semântica verifica o significado e a coerência das declarações.
+
+Na linguagem Tonto, que é declarativa e usada para representar conhecimento, a análise semântica tem um papel crucial na validação de **Padrões de Projeto de Ontologias (Ontology Design Patterns - ODPs)**.
+
+## Validação de Padrões Ontológicos
+Os ODPs conferem uma estrutura lógica mais formal à especificação da ontologia, definindo regras de combinação entre conceitos e relações. A análise semântica no Tontopiler verifica se esses padrões estão sendo seguidos corretamente.
+
+O contexto analisado pode ser:
+- **Imediato**: Parâmetros próximos, nomes de métodos, argumentos e complementos de operadores.
+- **Ordem Maior**: Importação de conceitos de múltiplos pacotes ou relações lógicas complexas entre classes.
+
+## Parâmetro semanticPatterns
+Para suportar essa análise, foi introduzido o parâmetro `semanticPatterns` na estrutura de símbolos. Este parâmetro armazena os padrões semânticos identificados para cada lexema, permitindo que o compilador (e agentes de software inteligentes) validem e interpretem as proposições lógicas da ontologia de forma mais rica e precisa.
 
 ## Colaboradores
 

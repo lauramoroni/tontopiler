@@ -12,14 +12,9 @@ phase Child specializes LivingPerson
 phase Teenager specializes LivingPerson
 phase Adult specializes LivingPerson
 
-disjoint complete genset AgePhase {
+complete genset AgePhase {
     general LivingPerson
     specifics Child, Teenager, Adult
-}
-
-disjoint complete genset LifeStatus {
-    general Person
-    specifics DeceasedPerson, LivingPerson
 }
 
 roleMixin Customer
